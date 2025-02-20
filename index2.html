@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive UI for Dementia</title>
+    <style>
+        body {
+            font-size: 16px;
+            background-color: white;
+            color: black;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .large-text { font-size: 24px; }
+        .high-contrast { background-color: black; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI-Powered Adaptive UI</h1>
+        <p id="content">This is a sample text that can be adapted.</p>
+        <button onclick="startListening()">🎙 Start Voice Control</button>
+        <button onclick="speakText()">🔊 Read Text</button>
+    </div>
+    
+    <script>
+        function startListening() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+            
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript.toLowerCase();
+                console.log("User said:", command);
+                adjustUI(command);
+            };
+        }
+        
+        function adjustUI(command) {
+            const content = document.getElementById("content");
+            let message = "";
+            if (command.includes("increase text")) {
+                content.classList.add("large-text");
+                message = "Text size increased.";
+            } else if (command.includes("contrast")) {
+                document.body.classList.add("high-contrast");
+                message = "High contrast mode enabled.";
+            } else if (command.includes("reset")) {
+                content.classList.remove("large-text");
+                document.body.classList.remove("high-contrast");
+                message = "Settings reset to default.";
+            }
+            if (message) {
+                speakMessage(message);
+            }
+        }
+        
+        function speakText() {
+            const content = document.getElementById("content").innerText;
+            speakMessage(content);
+        }
+
+        function speakMessage(message) {
+            const speech = new SpeechSynthesisUtterance(message);
+            speech.lang = 'en-US';
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+</body>
+</html>
