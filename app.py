@@ -1,41 +1,26 @@
 from flask import Flask, request, jsonify
-import os
-from openai import OpenAI  # Import the new OpenAI client
-from dotenv import load_dotenv
-
-# Load API key from .env
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found. Make sure it's set in your .env file.")
-
-client = OpenAI(api_key=api_key)  # Initialize OpenAI client
+from huggingface_hub import InferenceClient
 
 app = Flask(__name__)
 
+# Use Hugging Face's free text generation API (Runs in the Cloud)
+client = InferenceClient(model="bigscience/bloom")
+
 @app.route("/", methods=["GET"])
 def home():
-    return "Flask is running!"
+    return "Flask is running with Hugging Face API!"
 
 @app.route("/ai-intent", methods=["POST"])
 def ai_intent():
-    data = request.json  # Get JSON data
+    data = request.json
     user_input = data.get("command", "")
 
     if not user_input:
         return jsonify({"error": "No command provided"}), 400
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an AI assistant helping with adaptive UI."},
-                {"role": "user", "content": f"Analyze this UI command: '{user_input}'. What should change in the UI?"}
-            ]
-        )
-        intent = response.choices[0].message.content.strip()
-        return jsonify({"intent": intent})
+        response = client.text_generation(user_input, max_new_tokens=50)
+        return jsonify({"intent": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

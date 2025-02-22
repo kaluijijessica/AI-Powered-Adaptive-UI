@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Adaptive UI</title>
+</head>
+<body>
+    <h1>AI-Powered Adaptive UI</h1>
+    
+    <input type="text" id="command" placeholder="Type a command (e.g., make text bigger)">
+    <button onclick="sendCommand()">Send</button>
+    <p id="response"></p>
+
+    <script>
+    async function sendCommand() {
+    const command = document.getElementById("command").value;
+    const responseElement = document.getElementById("response");
+
+    responseElement.textContent = "Processing..."; // Show a loading message
+
+    const response = await fetch("https://api-inference.huggingface.co/models/bigscience/bloom", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer YOUR_HUGGINGFACE_API_KEY",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inputs: command })
+    });
+
+    const result = await response.json();
+
+    if (result && Array.isArray(result) && result.length > 0 && result[0].generated_text) {
+        let aiResponse = result[0].generated_text;
+
+        // ✅ Remove unwanted XML, HTML, and code-like formatting
+        aiResponse = aiResponse.replace(/<\/?[^>]+(>|$)/g, ""); // Remove tags
+        aiResponse = aiResponse.replace(/[\r\n]/g, " "); // Remove new lines
+        aiResponse = aiResponse.replace(/[^a-zA-Z0-9.,!? ]/g, ""); // Keep only text
+
+        responseElement.textContent = aiResponse;
+
+        // ✅ Apply UI changes based on AI response
+        if (aiResponse.toLowerCase().includes("bigger text") || aiResponse.toLowerCase().includes("increase text size")) {
+            document.body.style.fontSize = "24px"; // Make text bigger
+        } else if (aiResponse.toLowerCase().includes("smaller text") || aiResponse.toLowerCase().includes("reduce text size")) {
+            document.body.style.fontSize = "14px"; // Make text smaller
+        } else if (aiResponse.toLowerCase().includes("reset text")) {
+            document.body.style.fontSize = "16px"; // Reset to default
+        }
+
+    } else {
+        responseElement.textContent = "AI could not generate a response.";
+    }
+}
+
+
+    </script>
+</body>
+</html>
