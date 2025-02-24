@@ -47,47 +47,77 @@
         let textElement = document.getElementById("textview");
         const responseElement = document.getElementById("response");
 
-        responseElement.textContent = "Processing..."; // Show a loading message
+        responseElement.textContent = "Processing...";
 
         try {
+            // First handle direct commands for immediate response
+            const commandLower = command.toLowerCase();
+            
+            // Check for decrease/smaller commands first
+            if (commandLower.includes("small") || commandLower.includes("decrease") || 
+                commandLower.includes("reduce") || commandLower.includes("shrink")) {
+                let currentSize = window.getComputedStyle(textElement).fontSize;
+                let newSize = Math.max(parseFloat(currentSize) - 10, 12) + "px";
+                textElement.style.fontSize = newSize;
+                responseElement.textContent = `Making text smaller (${newSize})`;
+                console.log("Direct decrease to:", newSize);
+                return; // Exit after handling command
+            }
+            
+            // Check for increase/bigger commands
+            if (commandLower.includes("big") || commandLower.includes("large") || 
+                commandLower.includes("increase") || commandLower.includes("can't see")) {
+                let currentSize = window.getComputedStyle(textElement).fontSize;
+                let newSize = parseFloat(currentSize) + 10 + "px";
+                textElement.style.fontSize = newSize;
+                responseElement.textContent = `Making text bigger (${newSize})`;
+                console.log("Direct increase to:", newSize);
+                return; // Exit after handling command
+            }
+
+            // If no direct command matched, try AI interpretation
+            const aiPrompt = `Command: "${command}"
+            If the user wants text smaller/decreased/reduced, reply exactly with: SMALLER
+            If the user wants text bigger/increased/enlarged, reply exactly with: BIGGER
+            Reply with only one word: BIGGER or SMALLER`;
+
             const response = await fetch("https://api-inference.huggingface.co/models/bigscience/bloom", {
                 method: "POST",
                 headers: {
-                    "Authorization": "Bearer ",
+                    "Authorization": "Bearer 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",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    inputs: `Given the command "${command}", respond with only one of these exact words: "increase", "decrease", or "invalid". If the command is about making text bigger, say "increase". If it's about making text smaller, say "decrease". For any other command, say "invalid".`
-                })
+                body: JSON.stringify({ inputs: aiPrompt })
             });
 
             const result = await response.json();
-            
+            console.log("AI response:", result);
+
             if (result && Array.isArray(result) && result.length > 0) {
-                const aiResponse = result[0].generated_text.toLowerCase().trim();
-                
-                // Handle size changes based on AI response
-                if (aiResponse.includes("increase")) {
-                    let currentSize = window.getComputedStyle(textElement).fontSize;
-                    let newSize = parseFloat(currentSize) + 10 + "px";
-                    textElement.style.fontSize = newSize;
-                    responseElement.textContent = `AI understood: Make text bigger. New size: ${newSize}`;
-                }
-                else if (aiResponse.includes("decrease")) {
+                const aiResponse = result[0].generated_text.trim().toUpperCase();
+                console.log("AI interpreted as:", aiResponse);
+
+                if (aiResponse.includes("SMALLER")) {
                     let currentSize = window.getComputedStyle(textElement).fontSize;
                     let newSize = Math.max(parseFloat(currentSize) - 10, 12) + "px";
                     textElement.style.fontSize = newSize;
-                    responseElement.textContent = `AI understood: Make text smaller. New size: ${newSize}`;
+                    responseElement.textContent = `Making text smaller (${newSize})`;
+                    console.log("AI-directed decrease to:", newSize);
+                }
+                else if (aiResponse.includes("BIGGER")) {
+                    let currentSize = window.getComputedStyle(textElement).fontSize;
+                    let newSize = parseFloat(currentSize) + 10 + "px";
+                    textElement.style.fontSize = newSize;
+                    responseElement.textContent = `Making text bigger (${newSize})`;
+                    console.log("AI-directed increase to:", newSize);
                 }
                 else {
-                    responseElement.textContent = "AI couldn't understand the size command. Try saying 'make text bigger' or 'make text smaller'";
+                    responseElement.textContent = "Please say 'make it bigger' or 'make it smaller'";
                 }
-            } else {
-                responseElement.textContent = "AI response was not in the expected format. Please try again.";
             }
         } catch (error) {
-            responseElement.textContent = "Error connecting to AI service. Please try again.";
             console.error("Error:", error);
+            responseElement.textContent = "Sorry, please try again";
         }
     }
 
