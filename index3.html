@@ -3,23 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Powered Adaptive UI</title>
+    <title>Adaptive Text Assistant</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
         #textview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            line-height: 1.6;
             transition: all 0.3s ease;
-            font-size: 16px; /* Starting size */
+        }
+
+        #mic-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+
+        #mic-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        #mic-button:active {
+            transform: scale(0.95);
+        }
+
+        .status-container {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #e9ecef;
+        }
+
+        #command {
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        #response {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .instructions {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #2e7d32;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+
+        /* Animation for status changes */
+        .status-container {
+            transition: all 0.3s ease;
+        }
+
+        /* Pulse animation for active listening */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .listening {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
-    <h1>AI-Powered Adaptive UI</h1>
-    
-   
-<p id="textview">This is some text inside the TextView.</p>
-<button onclick="startListening()">🎤 Speak Now</button>
-<p id="command">Say a command...</p>
-<p id="response"></p>
+    <div class="container">
+        <div class="header">
+            <h1>Adaptive Text Assistant</h1>
+        </div>
 
+        <div class="instructions">
+            Try saying "make text bigger" or "make text smaller" to adjust the size.
+        </div>
+
+        <div id="textview">
+            This is a sample text that will change size based on voice commands. You can ask to make it bigger or smaller depending on your reading comfort.
+        </div>
+
+        <button id="mic-button" onclick="startListening()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            Speak Command
+        </button>
+
+        <div class="status-container">
+            <div id="command">Click the button and speak your command...</div>
+            <div id="response"></div>
+        </div>
+    </div>
 
     <script>
     async function startListening() {
