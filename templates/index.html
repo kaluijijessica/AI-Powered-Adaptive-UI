@@ -31,23 +31,53 @@
             </div>
 
             <div class="photo-memories">
-                <!-- Daily routine reminders -->
-                <img src="{{ url_for('static', filename='images/medication.jpg') }}" 
-                     alt="Medication Reminder" 
-                     class="memory-photo"
-                     title="Time for medication">
-                
-                <!-- Meal times -->
-                <img src="{{ url_for('static', filename='images/meal.jpg') }}" 
-                     alt="Meal Time" 
-                     class="memory-photo"
-                     title="Lunch time at 12:00">
-                
-                <!-- Activities -->
-                <img src="{{ url_for('static', filename='images/exercise.jpg') }}" 
-                     alt="Daily Walk" 
-                     class="memory-photo"
-                     title="Afternoon walk time">
+                <!-- Medication Reminder -->
+                <div class="memory-photo-container">
+                    <img src="{{ url_for('static', filename='images/medication.jpg') }}" 
+                         alt="Medication Reminder" 
+                         class="memory-photo">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Medication Time</div>
+                        <div class="photo-description">
+                            Remember to take your medicine:
+                            • Morning: 9:00 AM
+                            • Afternoon: 2:00 PM
+                            • Evening: 8:00 PM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meal Time -->
+                <div class="memory-photo-container">
+                    <img src="{{ url_for('static', filename='images/meal.jpg') }}" 
+                         alt="Meal Time" 
+                         class="memory-photo">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Meal Schedule</div>
+                        <div class="photo-description">
+                            • Breakfast: 8:00 AM
+                            • Lunch: 12:00 PM
+                            • Dinner: 6:00 PM
+                            Healthy meals keep you strong!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exercise -->
+                <div class="memory-photo-container">
+                    <img src="{{ url_for('static', filename='images/exercise.jpg') }}" 
+                         alt="Daily Exercise" 
+                         class="memory-photo">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Daily Activities</div>
+                        <div class="photo-description">
+                            • Morning walk: 10:00 AM
+                            • Garden time: 3:00 PM
+                            • Light stretching before bed
+                            Stay active and healthy!
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
