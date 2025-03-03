@@ -7,8 +7,8 @@ import json
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-# Hugging Face API settings
-API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased"
+# Hugging Face API settings - using a simpler text classification model
+API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large"
 headers = {"Authorization": "Bearer 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"}
 
 # User preferences and state management
@@ -16,33 +16,68 @@ class UserState:
     def __init__(self):
         self.text_size = 16
         self.high_contrast = False
-        self.last_interaction = None
+        self.simplified_mode = False
         self.confusion_count = 0
+        self.last_interaction = datetime.now()
         self.needs_reminder = False
+        self.last_command = None
 
 user_state = UserState()
 
 def process_command(command):
     try:
-        # Create a clear prompt for the model
-        prompt = f'''Command: "{command}"
-        Rules:
-        - If about making text bigger/increasing size → respond "BIGGER"
-        - If about making text smaller/decreasing size → respond "SMALLER"
-        - If about time/date/when → respond "TIME"
-        - If about help/confused → respond "HELP"
-        - If about contrast/visibility → respond "CONTRAST"
-        Respond with single word only from above options.'''
+        command_lower = command.lower()
+        
+        # Text size commands (keeping the working functionality)
+        if any(word in command_lower for word in ['bigger', 'larger', "can't see", 'increase']):
+            return "BIGGER"
+        elif any(word in command_lower for word in ['smaller', 'decrease', 'too big']):
+            return "SMALLER"
+            
+        # Enhanced contrast detection
+        elif any(word in command_lower for word in ['dark', 'bright', 'contrast', 'hard to see', 'better view']):
+            return "CONTRAST"
+            
+        # Time and date queries
+        elif any(word in command_lower for word in ['time', 'date', 'day', 'today', 'when']):
+            return "TIME"
+            
+        # Help and confusion
+        elif any(word in command_lower for word in ['help', 'confused', 'lost', 'what', 'how']):
+            return "HELP"
+            
+        # Repeat last command
+        elif any(word in command_lower for word in ['repeat', 'again', 'what did you say']):
+            return "REPEAT"
+
+        # If no direct match, try AI
+        prompt = f'''Classify this command: "{command}"
+        Options:
+        CONTRAST - if about visibility/colors
+        TIME - if asking about time/date
+        HELP - if needs assistance
+        REPEAT - if wants something repeated
+
+        Return only one word from the options above.'''
 
         response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
         result = response.json()
         
         if isinstance(result, list) and len(result) > 0:
             prediction = result[0]['generated_text'].strip().upper()
+            print(f"AI Response: {prediction}")
+            
+            # Track confusion patterns
+            if "confused" in command.lower() or "help" in command.lower():
+                user_state.confusion_count += 1
+                if user_state.confusion_count >= 3:
+                    user_state.simplified_mode = True
+            
             return prediction
+            
         return "UNCLEAR"
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error processing command: {str(e)}")
         return "UNCLEAR"
 
 @app.route('/')
@@ -51,35 +86,29 @@ def home():
 
 @socketio.on('command')
 def handle_command(data):
-    command = data.get('command', '').lower()
-    action = process_command(command)
-    response = create_response(action, command)
-    socketio.emit('response', response)
+    try:
+        command = data.get('command', '').lower()
+        print(f"Received command: {command}")
+        
+        action = process_command(command)
+        print(f"Processed action: {action}")
+        
+        user_state.last_command = command  # Store last command for repeat functionality
+        response = create_response(action, command)
+        socketio.emit('response', response)
+    except Exception as e:
+        print(f"Error in handle_command: {str(e)}")
+        socketio.emit('response', {
+            "action": "ERROR",
+            "message": "I'm having trouble understanding. Could you try again?",
+            "speak": True
+        })
 
 def create_response(action, command):
     current_time = datetime.now()
+    user_state.last_interaction = current_time
     
-    if action == "HELP":
-        return {
-            "action": "HELP",
-            "message": "It's okay to feel confused. Would you like me to:",
-            "options": [
-                "Make the text easier to read",
-                "Tell you the time and date",
-                "Read the text out loud"
-            ],
-            "speak": True
-        }
-
-    elif action == "TIME":
-        time_str = current_time.strftime("%I:%M %p on %A, %B %d")
-        return {
-            "action": "TIME",
-            "message": f"It's {time_str}",
-            "speak": True
-        }
-
-    elif action == "BIGGER":
+    if action == "BIGGER":
         user_state.text_size = min(user_state.text_size + 2, 32)
         return {
             "action": "BIGGER",
@@ -87,7 +116,6 @@ def create_response(action, command):
             "size": user_state.text_size,
             "speak": True
         }
-
     elif action == "SMALLER":
         user_state.text_size = max(user_state.text_size - 2, 12)
         return {
@@ -96,25 +124,48 @@ def create_response(action, command):
             "size": user_state.text_size,
             "speak": True
         }
-
     elif action == "CONTRAST":
         user_state.high_contrast = not user_state.high_contrast
+        message = "Switching to high contrast mode" if user_state.high_contrast else "Switching to normal contrast"
         return {
             "action": "CONTRAST",
-            "message": "Adjusting the contrast to make it easier to read",
+            "message": message,
             "contrast": user_state.high_contrast,
             "speak": True
         }
-
+    elif action == "TIME":
+        time_str = current_time.strftime("%I:%M %p on %A, %B %d")
+        return {
+            "action": "TIME",
+            "message": f"It's {time_str}",
+            "speak": True,
+            "time_display": True
+        }
+    elif action == "HELP":
+        return {
+            "action": "HELP",
+            "message": "Here's what I can help you with:",
+            "options": [
+                "Make text bigger",
+                "Make text smaller",
+                "Change contrast",
+                "Tell the time",
+                "Repeat last message"
+            ],
+            "speak": True
+        }
+    elif action == "REPEAT" and user_state.last_command:
+        return create_response(process_command(user_state.last_command), user_state.last_command)
     else:
         return {
             "action": "UNCLEAR",
-            "message": "I'm not sure what you need. Would you like me to:",
+            "message": "I'm not sure what you need. Try saying:",
             "options": [
-                "Make the text bigger",
-                "Make the text smaller",
-                "Change the contrast",
-                "Tell you the time"
+                "Make it bigger",
+                "Make it smaller",
+                "Change contrast",
+                "What time is it",
+                "Help"
             ],
             "speak": True
         }
