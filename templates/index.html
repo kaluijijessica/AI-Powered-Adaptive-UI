@@ -3,198 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adaptive Text Assistant</title>
+    <title>Memory Helper</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
+        :root {
+            --text-color: #333;
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .high-contrast {
+            --text-color: #fff;
+            --bg-color: #000;
+            --container-bg: #222;
         }
 
         .container {
-            background: white;
+            background: var(--container-bg);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        #textview {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            line-height: 1.6;
-            transition: all 0.3s ease;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        #mic-button {
-            background-color: #4CAF50;
-            color: white;
+        .time-display {
+            font-size: 1.2em;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .content-area {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .button {
+            padding: 15px;
             border: none;
-            padding: 15px 30px;
             border-radius: 25px;
             cursor: pointer;
             font-size: 16px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
-            margin: 20px auto;
             transition: all 0.3s ease;
         }
 
-        #mic-button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        .primary-button {
+            background-color: #4CAF50;
+            color: white;
         }
 
-        #mic-button:active {
-            transform: scale(0.95);
+        .help-button {
+            background-color: #ff9800;
+            color: white;
         }
 
-        .status-container {
-            margin: 20px 0;
+        .emergency-button {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .options-panel {
+            display: none;
+            margin-top: 20px;
             padding: 15px;
             border-radius: 10px;
-            background: #e9ecef;
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        #command {
-            color: #666;
-            margin-bottom: 10px;
-            font-style: italic;
+        .option-button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
         }
 
-        #response {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-        }
-
-        .instructions {
-            background: #e8f5e9;
+        .reminder {
+            background: #fff3e0;
             padding: 15px;
             border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            color: #2e7d32;
+            margin: 10px 0;
+            display: none;
         }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-        }
-
-        /* Animation for status changes */
-        .status-container {
-            transition: all 0.3s ease;
-        }
-
-        /* Pulse animation for active listening */
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .listening {
             animation: pulse 2s infinite;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .photo-memories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .memory-photo {
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .calendar {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .today-activities {
+            margin-top: 10px;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Adaptive Text Assistant</h1>
+            <h1>Your Memory Helper</h1>
         </div>
 
-        <div class="instructions">
-            Try saying "make text bigger" or "make text smaller" to adjust the size.
+        <div class="time-display" id="timeDisplay">
+            Loading current time...
         </div>
 
-        <div id="textview">
-            This is a sample text that will change size based on voice commands. You can ask to make it bigger or smaller depending on your reading comfort.
+        <div class="content-area" id="mainContent">
+            <div class="today-summary">
+                <h2>Today's Overview</h2>
+                <div class="calendar">
+                    <h3>Your Schedule</h3>
+                    <div class="today-activities" id="activities">
+                        <div class="activity-item">9:00 AM - Morning Medicine</div>
+                        <div class="activity-item">12:00 PM - Lunch Time</div>
+                        <div class="activity-item">3:00 PM - Family Visit</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="photo-memories">
+                <img src="family1.jpg" alt="Family Photo" class="memory-photo">
+                <img src="family2.jpg" alt="Family Photo" class="memory-photo">
+                <img src="family3.jpg" alt="Family Photo" class="memory-photo">
+            </div>
         </div>
 
-        <button id="mic-button" onclick="startListening()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-            Speak Command
-        </button>
+        <div class="control-panel">
+            <button class="button primary-button" id="micButton" onclick="startListening()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                Speak to Me
+            </button>
+            <button class="button help-button" onclick="showHelp()">
+                Need Help?
+            </button>
+            <button class="button emergency-button" onclick="handleEmergency()">
+                Emergency
+            </button>
+        </div>
 
-        <div class="status-container">
-            <div id="command">Click the button and speak your command...</div>
-            <div id="response"></div>
+        <div class="reminder" id="reminder">
+            Time for your medication!
+        </div>
+
+        <div class="options-panel" id="optionsPanel">
+            <button class="option-button">Make Text Bigger</button>
+            <button class="option-button">Make Text Smaller</button>
+            <button class="option-button">Change Colors</button>
+            <button class="option-button">Read Aloud</button>
+        </div>
+
+        <div class="status-message" id="status">
+            Click the microphone and speak to me...
         </div>
     </div>
 
     <script>
-        async function startListening() {
+        const socket = io();
+        let lastCommand = null;
+
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('timeDisplay').textContent = `${timeString} on ${dateString}`;
+        }
+
+        function startListening() {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            const commandElement = document.getElementById("command");
-            const responseElement = document.getElementById("response");
-            const micButton = document.getElementById("mic-button");
+            const micButton = document.getElementById('micButton');
+            const status = document.getElementById('status');
 
             recognition.lang = 'en-US';
             recognition.continuous = false;
             recognition.interimResults = false;
 
             recognition.onstart = () => {
-                commandElement.textContent = "Listening...";
                 micButton.classList.add('listening');
+                status.textContent = "I'm listening...";
             };
 
-            recognition.onresult = async (event) => {
+            recognition.onresult = (event) => {
                 const command = event.results[0][0].transcript;
-                commandElement.textContent = `I heard: ${command}`;
-                
-                try {
-                    const response = await fetch('/process_command', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ command: command })
-                    });
-
-                    const result = await response.json();
-                    
-                    let textElement = document.getElementById("textview");
-                    if (result.action === "BIGGER") {
-                        let currentSize = window.getComputedStyle(textElement).fontSize;
-                        let newSize = parseFloat(currentSize) + 10 + "px";
-                        textElement.style.fontSize = newSize;
-                    } else if (result.action === "SMALLER") {
-                        let currentSize = window.getComputedStyle(textElement).fontSize;
-                        let newSize = Math.max(parseFloat(currentSize) - 10, 12) + "px";
-                        textElement.style.fontSize = newSize;
-                    }
-                    
-                    responseElement.textContent = result.message;
-                } catch (error) {
-                    console.error('Error:', error);
-                    responseElement.textContent = "Error processing command. Please try again.";
-                }
+                status.textContent = `I heard: ${command}`;
+                lastCommand = command;
+                socket.emit('command', { command: command });
             };
 
             recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-                commandElement.textContent = `Error: ${event.error}. Please try again.`;
+                console.error("Error:", event.error);
+                status.textContent = "I couldn't hear you. Please try again.";
                 micButton.classList.remove('listening');
             };
 
@@ -205,10 +282,74 @@
             try {
                 recognition.start();
             } catch (error) {
-                console.error("Error starting speech recognition:", error);
-                commandElement.textContent = "Error starting speech recognition. Please try again.";
+                console.error("Error starting recognition:", error);
+                status.textContent = "I'm having trouble listening. Please try again.";
             }
         }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;  // Slightly slower speech
+            utterance.pitch = 1;
+            speechSynthesis.speak(utterance);
+        }
+
+        function showHelp() {
+            const optionsPanel = document.getElementById('optionsPanel');
+            optionsPanel.style.display = optionsPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function handleEmergency() {
+            speak("Contacting your emergency contact. Please stay calm.");
+            // Add emergency contact logic here
+        }
+
+        socket.on('response', (data) => {
+            const status = document.getElementById('status');
+            status.textContent = data.message;
+            
+            if (data.speak) {
+                speak(data.message);
+            }
+
+            if (data.size) {
+                document.body.style.fontSize = data.size + 'px';
+            }
+
+            if (data.contrast !== undefined) {
+                document.body.classList.toggle('high-contrast', data.contrast);
+            }
+
+            if (data.options) {
+                const optionsPanel = document.getElementById('optionsPanel');
+                optionsPanel.innerHTML = data.options.map(option => 
+                    `<button class="option-button" onclick="handleOption('${option}')">${option}</button>`
+                ).join('');
+                optionsPanel.style.display = 'block';
+            }
+        });
+
+        // Update time every minute
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Check for medication times
+        function checkMedication() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // Example medication times
+            const medTimes = [{h: 9, m: 0}, {h: 13, m: 0}, {h: 18, m: 0}];
+            
+            if (medTimes.some(time => time.h === hours && time.m === minutes)) {
+                document.getElementById('reminder').style.display = 'block';
+                speak("It's time for your medication");
+            }
+        }
+
+        // Check medication times every minute
+        setInterval(checkMedication, 60000);
     </script>
 </body>
 </html> 
