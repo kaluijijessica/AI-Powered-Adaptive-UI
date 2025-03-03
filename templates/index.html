@@ -31,9 +31,23 @@
             </div>
 
             <div class="photo-memories">
-                <img src="family1.jpg" alt="Family Photo" class="memory-photo">
-                <img src="family2.jpg" alt="Family Photo" class="memory-photo">
-                <img src="family3.jpg" alt="Family Photo" class="memory-photo">
+                <!-- Daily routine reminders -->
+                <img src="{{ url_for('static', filename='images/medication.jpg') }}" 
+                     alt="Medication Reminder" 
+                     class="memory-photo"
+                     title="Time for medication">
+                
+                <!-- Meal times -->
+                <img src="{{ url_for('static', filename='images/meal.jpg') }}" 
+                     alt="Meal Time" 
+                     class="memory-photo"
+                     title="Lunch time at 12:00">
+                
+                <!-- Activities -->
+                <img src="{{ url_for('static', filename='images/exercise.jpg') }}" 
+                     alt="Daily Walk" 
+                     class="memory-photo"
+                     title="Afternoon walk time">
             </div>
         </div>
 
