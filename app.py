@@ -3,11 +3,13 @@ from flask_socketio import SocketIO
 from datetime import datetime
 import requests
 import json
+import speech_recognition as sr
+import threading
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-# Hugging Face API settings - using a simpler text classification model
+# Hugging Face API settings - using a pre-trained model for command classification
 API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large"
 headers = {"Authorization": "Bearer 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"}
 
@@ -25,57 +27,49 @@ class UserState:
 user_state = UserState()
 
 def process_command(command):
+    """
+    Use the Hugging Face AI model as the primary classifier.
+    The prompt includes all options so that context is properly analyzed.
+    In case the response is unclear, fallback to keyword matching.
+    """
     try:
-        command_lower = command.lower()
+        prompt = f'''You are an assistant that receives voice commands from dementia patients.
+Interpret the following command and return one of the following actions:
+- BIGGER: if the user wants the text to be increased.
+- SMALLER: if the user wants the text to be decreased.
+- CONTRAST: if the user wants to adjust contrast (e.g., "too bright" means switch to dark mode).
+- TIME: if the user is asking for the current time/date.
+- HELP: if the user is asking for help.
+- REPEAT: if the user wants the last command repeated.
+Command: "{command}"
+Respond with only one of these words.
+'''
+        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+        result = response.json()
         
-        # Text size commands (keeping the working functionality)
+        if isinstance(result, list) and len(result) > 0 and 'generated_text' in result[0]:
+            prediction = result[0]['generated_text'].strip().upper()
+            print(f"AI Response: {prediction}")
+            # If the AI returns a valid action, use it.
+            if prediction in ["BIGGER", "SMALLER", "CONTRAST", "TIME", "HELP", "REPEAT"]:
+                return prediction
+
+        # Fallback: keyword matching if AI response is unclear
+        command_lower = command.lower()
         if any(word in command_lower for word in ['bigger', 'larger', "can't see", 'increase']):
             return "BIGGER"
         elif any(word in command_lower for word in ['smaller', 'decrease', 'too big']):
             return "SMALLER"
-            
-        # Enhanced contrast detection
-        elif any(word in command_lower for word in ['dark', 'bright', 'contrast', 'hard to see', 'better view']):
+        elif any(word in command_lower for word in ['dark', 'bright', 'contrast', 'hard to see', 'too bright', 'better view']):
             return "CONTRAST"
-            
-        # Time and date queries
         elif any(word in command_lower for word in ['time', 'date', 'day', 'today', 'when']):
             return "TIME"
-            
-        # Help and confusion
         elif any(word in command_lower for word in ['help', 'confused', 'lost', 'what', 'how']):
             return "HELP"
-            
-        # Repeat last command
         elif any(word in command_lower for word in ['repeat', 'again', 'what did you say']):
             return "REPEAT"
-
-        # If no direct match, try AI
-        prompt = f'''Classify this command: "{command}"
-        Options:
-        CONTRAST - if about visibility/colors
-        TIME - if asking about time/date
-        HELP - if needs assistance
-        REPEAT - if wants something repeated
-
-        Return only one word from the options above.'''
-
-        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
-        result = response.json()
-        
-        if isinstance(result, list) and len(result) > 0:
-            prediction = result[0]['generated_text'].strip().upper()
-            print(f"AI Response: {prediction}")
-            
-            # Track confusion patterns
-            if "confused" in command.lower() or "help" in command.lower():
-                user_state.confusion_count += 1
-                if user_state.confusion_count >= 3:
-                    user_state.simplified_mode = True
-            
-            return prediction
-            
-        return "UNCLEAR"
+        else:
+            return "UNCLEAR"
     except Exception as e:
         print(f"Error processing command: {str(e)}")
         return "UNCLEAR"
@@ -90,6 +84,7 @@ def handle_command(data):
         command = data.get('command', '').lower()
         print(f"Received command: {command}")
         
+        # Process command using AI classifier (primary)
         action = process_command(command)
         print(f"Processed action: {action}")
         
@@ -155,6 +150,7 @@ def create_response(action, command):
             "speak": True
         }
     elif action == "REPEAT" and user_state.last_command:
+        # Recursively process the last command for context.
         return create_response(process_command(user_state.last_command), user_state.last_command)
     else:
         return {
@@ -169,6 +165,30 @@ def create_response(action, command):
             ],
             "speak": True
         }
+
+def listen_for_wake_word():
+    """ Continuously listens for the wake word "hello" using the microphone. """
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Background wake word listener started...")
+        while True:
+            try:
+                audio = recognizer.listen(source)
+                text = recognizer.recognize_google(audio).lower()
+                print(f"Background heard: {text}")
+                if "hello" in text:
+                    print("Wake word 'hello' detected in background!")
+                    socketio.emit('wake_word_detected', {"message": "Wake word activated!"})
+                    # Optionally, auto-trigger listening:
+                    # startListening() could be invoked here if desired.
+            except sr.UnknownValueError:
+                continue  # Ignore unrecognized speech
+            except sr.RequestError as e:
+                print(f"Speech recognition error: {e}")
+
+# Start the background thread for wake word detection
+wake_word_thread = threading.Thread(target=listen_for_wake_word, daemon=True)
+wake_word_thread.start()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

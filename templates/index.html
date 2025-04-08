@@ -1,241 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Helper</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Memory Helper</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Your Memory Helper</h1>
-        </div>
-
-        <div class="time-display" id="timeDisplay">
-            Loading current time...
-        </div>
-
-        <div class="content-area" id="mainContent">
-            <div class="today-summary">
-                <h2>Today's Overview</h2>
-                <div class="calendar">
-                    <h3>Your Schedule</h3>
-                    <div class="today-activities" id="activities">
-                        <div class="activity-item">9:00 AM - Morning Medicine</div>
-                        <div class="activity-item">12:00 PM - Lunch Time</div>
-                        <div class="activity-item">3:00 PM - Family Visit</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="photo-memories">
-                <!-- Medication Reminder -->
-                <div class="memory-photo-container">
-                    <img src="{{ url_for('static', filename='images/medication.jpg') }}" 
-                         alt="Medication Reminder" 
-                         class="memory-photo">
-                    <div class="photo-overlay">
-                        <div class="photo-title">Medication Time</div>
-                        <div class="photo-description">
-                            Remember to take your medicine:
-                            • Morning: 9:00 AM
-                            • Afternoon: 2:00 PM
-                            • Evening: 8:00 PM
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Meal Time -->
-                <div class="memory-photo-container">
-                    <img src="{{ url_for('static', filename='images/meal.jpg') }}" 
-                         alt="Meal Time" 
-                         class="memory-photo">
-                    <div class="photo-overlay">
-                        <div class="photo-title">Meal Schedule</div>
-                        <div class="photo-description">
-                            • Breakfast: 8:00 AM
-                            • Lunch: 12:00 PM
-                            • Dinner: 6:00 PM
-                            Healthy meals keep you strong!
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Exercise -->
-                <div class="memory-photo-container">
-                    <img src="{{ url_for('static', filename='images/exercise.jpg') }}" 
-                         alt="Daily Exercise" 
-                         class="memory-photo">
-                    <div class="photo-overlay">
-                        <div class="photo-title">Daily Activities</div>
-                        <div class="photo-description">
-                            • Morning walk: 10:00 AM
-                            • Garden time: 3:00 PM
-                            • Light stretching before bed
-                            Stay active and healthy!
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="control-panel">
-            <button class="button primary-button" id="micButton" onclick="startListening()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/>
-                    <line x1="8" y1="23" x2="16" y2="23"/>
-                </svg>
-                Speak to Me
-            </button>
-            <button class="button help-button" onclick="showHelp()">
-                Need Help?
-            </button>
-            <button class="button emergency-button" onclick="handleEmergency()">
-                Emergency
-            </button>
-        </div>
-
-        <div class="reminder" id="reminder">
-            Time for your medication!
-        </div>
-
-        <div class="options-panel" id="optionsPanel">
-            <button class="option-button">Make Text Bigger</button>
-            <button class="option-button">Make Text Smaller</button>
-            <button class="option-button">Change Colors</button>
-            <button class="option-button">Read Aloud</button>
-        </div>
-
-        <div class="status-message" id="status">
-            Click the microphone and speak to me...
-        </div>
+  <div class="container">
+    <!-- Header with large, clear title and current time -->
+    <div class="header">
+      <h1>Your Memory Helper</h1>
+      <div class="time-display" id="timeDisplay">Loading current time...</div>
     </div>
 
-    <script>
-        const socket = io();
-        let lastCommand = null;
+    <!-- Main content with essential patient information -->
+    <div class="content-area" id="mainContent">
+      <div class="today-summary">
+        <h2>Today's Overview</h2>
+        <div class="calendar">
+          <h3>Your Schedule</h3>
+          <div class="today-activities" id="activities">
+            <div class="activity-item">9:00 AM - Morning Medicine</div>
+            <div class="activity-item">12:00 PM - Lunch Time</div>
+            <div class="activity-item">3:00 PM - Family Visit</div>
+          </div>
+        </div>
+      </div>
 
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit',
-                hour12: true 
-            });
-            const dateString = now.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            document.getElementById('timeDisplay').textContent = `${timeString} on ${dateString}`;
+      <!-- Medication Reminder Section -->
+      <div class="reminder" id="reminder">
+        <h2>Medication Time</h2>
+        <p>Please take your medicine now.</p>
+      </div>
+    </div>
+
+    <!-- Control panel with one main button for voice activation -->
+    <div class="control-panel">
+      <button class="button primary-button" id="micButton" onclick="startListening()">
+        Speak to Me
+      </button>
+      <button class="button help-button" onclick="showHelp()">
+        Need Help?
+      </button>
+      <button class="button emergency-button" onclick="handleEmergency()">
+        Emergency
+      </button>
+    </div>
+
+    <!-- Options for text size, contrast, and caregiver features -->
+    <div class="options-panel" id="optionsPanel">
+      <button class="option-button">Make Text Bigger</button>
+      <button class="option-button">Make Text Smaller</button>
+      <button class="option-button">Change Contrast</button>
+      <button class="option-button">Caregiver Log</button>
+      <button class="option-button">Read Aloud</button>
+    </div>
+
+    <!-- Status message area with large, clear text -->
+    <div class="status-message" id="status">
+      Tap "Speak to Me" or say "hello" to start...
+    </div>
+
+    <!-- Caregiver extra panel (hidden by default) -->
+    <div class="caregiver-panel" id="caregiverPanel">
+      <h2>Caregiver Dashboard</h2>
+      <p>Recent interactions and alerts will appear here.</p>
+      <!-- Future implementation: list of logs/alerts -->
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let lastCommand = null;
+
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      const dateString = now.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      document.getElementById('timeDisplay').textContent = `${timeString} on ${dateString}`;
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const micButton = document.getElementById('micButton');
+      const status = document.getElementById('status');
+
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micButton.classList.add('listening');
+        status.textContent = "I'm listening...";
+      };
+
+      recognition.onresult = (event) => {
+        const command = event.results[0][0].transcript;
+        status.textContent = `I heard: ${command}`;
+        lastCommand = command;
+        socket.emit('command', { command: command });
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Error:", event.error);
+        status.textContent = "I couldn't hear you. Please try again.";
+        micButton.classList.remove('listening');
+      };
+
+      recognition.onend = () => {
+        micButton.classList.remove('listening');
+        // Ensure wake word detection resumes
+        setTimeout(detectWakeWord, 5000);
+      };
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        status.textContent = "I'm having trouble listening. Please try again.";
+      }
+    }
+
+    // Wake word detection always listens for "hello" in the background
+    function detectWakeWord() {
+      let wakeWordRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      wakeWordRecognition.lang = "en-US";
+      wakeWordRecognition.continuous = true;
+      wakeWordRecognition.interimResults = false;
+
+      wakeWordRecognition.onresult = function (event) {
+        let command = event.results[0][0].transcript.toLowerCase();
+        console.log("Wake Word Detection:", command);
+
+        if (command.includes("hello")) {
+          console.log("'Hello' detected! Activating voice recognition...");
+          wakeWordRecognition.stop();
+          startListening();
         }
+      };
 
-        function startListening() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            const micButton = document.getElementById('micButton');
-            const status = document.getElementById('status');
+      wakeWordRecognition.onerror = function (event) {
+        console.error("Wake word recognition error:", event.error);
+        setTimeout(detectWakeWord, 5000);
+      };
 
-            recognition.lang = 'en-US';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+      wakeWordRecognition.start();
+    }
 
-            recognition.onstart = () => {
-                micButton.classList.add('listening');
-                status.textContent = "I'm listening...";
-            };
+    detectWakeWord(); // Start continuous wake word detection
 
-            recognition.onresult = (event) => {
-                const command = event.results[0][0].transcript;
-                status.textContent = `I heard: ${command}`;
-                lastCommand = command;
-                socket.emit('command', { command: command });
-            };
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      speechSynthesis.speak(utterance);
+    }
 
-            recognition.onerror = (event) => {
-                console.error("Error:", event.error);
-                status.textContent = "I couldn't hear you. Please try again.";
-                micButton.classList.remove('listening');
-            };
+    function showHelp() {
+      const optionsPanel = document.getElementById('optionsPanel');
+      optionsPanel.style.display = optionsPanel.style.display === 'none' ? 'block' : 'none';
+    }
 
-            recognition.onend = () => {
-                micButton.classList.remove('listening');
-            };
+    function handleEmergency() {
+      speak("Contacting your emergency contact. Please stay calm.");
+      // Future: Send an emergency alert to caregiver dashboard or notify caregiver
+    }
 
-            try {
-                recognition.start();
-            } catch (error) {
-                console.error("Error starting recognition:", error);
-                status.textContent = "I'm having trouble listening. Please try again.";
-            }
-        }
+    socket.on('response', (data) => {
+      const status = document.getElementById('status');
+      status.textContent = data.message;
+      
+      if (data.speak) {
+        speak(data.message);
+      }
 
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;  // Slightly slower speech
-            utterance.pitch = 1;
-            speechSynthesis.speak(utterance);
-        }
+      if (data.size) {
+        document.body.style.fontSize = data.size + 'px';
+      }
 
-        function showHelp() {
-            const optionsPanel = document.getElementById('optionsPanel');
-            optionsPanel.style.display = optionsPanel.style.display === 'none' ? 'block' : 'none';
-        }
+      if (data.contrast !== undefined) {
+        document.body.classList.toggle('high-contrast', data.contrast);
+      }
 
-        function handleEmergency() {
-            speak("Contacting your emergency contact. Please stay calm.");
-            // Add emergency contact logic here
-        }
+      if (data.options) {
+        const optionsPanel = document.getElementById('optionsPanel');
+        optionsPanel.innerHTML = data.options.map(option => 
+          `<button class="option-button" onclick="handleOption('${option}')">${option}</button>`
+        ).join('');
+        optionsPanel.style.display = 'block';
+      }
+    });
 
-        socket.on('response', (data) => {
-            const status = document.getElementById('status');
-            status.textContent = data.message;
-            
-            if (data.speak) {
-                speak(data.message);
-            }
+    updateTime();
+    setInterval(updateTime, 60000);
 
-            if (data.size) {
-                document.body.style.fontSize = data.size + 'px';
-            }
+    function checkMedication() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      
+      const medTimes = [{h: 9, m: 0}, {h: 13, m: 0}, {h: 18, m: 0}];
+      
+      if (medTimes.some(time => time.h === hours && time.m === minutes)) {
+        document.getElementById('reminder').style.display = 'block';
+        speak("It's time for your medication");
+      }
+    }
 
-            if (data.contrast !== undefined) {
-                document.body.classList.toggle('high-contrast', data.contrast);
-            }
-
-            if (data.options) {
-                const optionsPanel = document.getElementById('optionsPanel');
-                optionsPanel.innerHTML = data.options.map(option => 
-                    `<button class="option-button" onclick="handleOption('${option}')">${option}</button>`
-                ).join('');
-                optionsPanel.style.display = 'block';
-            }
-        });
-
-        // Update time every minute
-        updateTime();
-        setInterval(updateTime, 60000);
-
-        // Check for medication times
-        function checkMedication() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            
-            // Example medication times
-            const medTimes = [{h: 9, m: 0}, {h: 13, m: 0}, {h: 18, m: 0}];
-            
-            if (medTimes.some(time => time.h === hours && time.m === minutes)) {
-                document.getElementById('reminder').style.display = 'block';
-                speak("It's time for your medication");
-            }
-        }
-
-        // Check medication times every minute
-        setInterval(checkMedication, 60000);
-    </script>
+    setInterval(checkMedication, 60000);
+  </script>
 </body>
-</html> 
+</html>
