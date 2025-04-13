@@ -1,223 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Memory Helper</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <title>Dementia Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <div class="container">
-    <!-- Header with large, clear title and current time -->
-    <div class="header">
-      <h1>Your Memory Helper</h1>
-      <div class="time-display" id="timeDisplay">Loading current time...</div>
-    </div>
-
-    <!-- Main content with essential patient information -->
-    <div class="content-area" id="mainContent">
-      <div class="today-summary">
-        <h2>Today's Overview</h2>
-        <div class="calendar">
-          <h3>Your Schedule</h3>
-          <div class="today-activities" id="activities">
-            <div class="activity-item">9:00 AM - Morning Medicine</div>
-            <div class="activity-item">12:00 PM - Lunch Time</div>
-            <div class="activity-item">3:00 PM - Family Visit</div>
-          </div>
+    <div class="container">
+        <div class="header">
+            <h1>Dementia Voice Assistant</h1>
+            <div class="time-display" id="timeDisplay"></div>
         </div>
-      </div>
 
-      <!-- Medication Reminder Section -->
-      <div class="reminder" id="reminder">
-        <h2>Medication Time</h2>
-        <p>Please take your medicine now.</p>
-      </div>
+        <div class="content-area">
+            <p>Tap the button or say the wake word to start.</p>
+            <div id="status" class="status-message">Listening status will appear here.</div>
+        </div>
+
+        <div class="reminder" id="reminderBox">You have a reminder!</div>
+
+        <div class="control-panel">
+            <button id="speakBtn" class="button primary-button">🎤 Speak</button>
+            <button id="helpBtn" class="button help-button">🆘 Help</button>
+            <button id="emergencyBtn" class="button emergency-button">🚨 Emergency</button>
+        </div>
+
+        <div class="options-panel" id="optionsPanel">
+            <button class="option-button">Take Medication</button>
+            <button class="option-button">Call Caregiver</button>
+        </div>
+
+        <div class="caregiver-panel" id="caregiverPanel">
+            <h3>Caregiver Contact</h3>
+            <p>John Doe - 9876543210</p>
+        </div>
     </div>
 
-    <!-- Control panel with one main button for voice activation -->
-    <div class="control-panel">
-      <button class="button primary-button" id="micButton" onclick="startListening()">
-        Speak to Me
-      </button>
-      <button class="button help-button" onclick="showHelp()">
-        Need Help?
-      </button>
-      <button class="button emergency-button" onclick="handleEmergency()">
-        Emergency
-      </button>
-    </div>
-
-    <!-- Options for text size, contrast, and caregiver features -->
-    <div class="options-panel" id="optionsPanel">
-      <button class="option-button">Make Text Bigger</button>
-      <button class="option-button">Make Text Smaller</button>
-      <button class="option-button">Change Contrast</button>
-      <button class="option-button">Caregiver Log</button>
-      <button class="option-button">Read Aloud</button>
-    </div>
-
-    <!-- Status message area with large, clear text -->
-    <div class="status-message" id="status">
-      Tap "Speak to Me" or say "hello" to start...
-    </div>
-
-    <!-- Caregiver extra panel (hidden by default) -->
-    <div class="caregiver-panel" id="caregiverPanel">
-      <h2>Caregiver Dashboard</h2>
-      <p>Recent interactions and alerts will appear here.</p>
-      <!-- Future implementation: list of logs/alerts -->
-    </div>
-  </div>
-
-  <script>
-    const socket = io();
-    let lastCommand = null;
-
-    function updateTime() {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      });
-      const dateString = now.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      document.getElementById('timeDisplay').textContent = `${timeString} on ${dateString}`;
-    }
-
-    function startListening() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      const micButton = document.getElementById('micButton');
-      const status = document.getElementById('status');
-
-      recognition.lang = 'en-US';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        micButton.classList.add('listening');
-        status.textContent = "I'm listening...";
-      };
-
-      recognition.onresult = (event) => {
-        const command = event.results[0][0].transcript;
-        status.textContent = `I heard: ${command}`;
-        lastCommand = command;
-        socket.emit('command', { command: command });
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Error:", event.error);
-        status.textContent = "I couldn't hear you. Please try again.";
-        micButton.classList.remove('listening');
-      };
-
-      recognition.onend = () => {
-        micButton.classList.remove('listening');
-        // Ensure wake word detection resumes
-        setTimeout(detectWakeWord, 5000);
-      };
-
-      try {
-        recognition.start();
-      } catch (error) {
-        console.error("Error starting recognition:", error);
-        status.textContent = "I'm having trouble listening. Please try again.";
-      }
-    }
-
-    // Wake word detection always listens for "hello" in the background
-    function detectWakeWord() {
-      let wakeWordRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      wakeWordRecognition.lang = "en-US";
-      wakeWordRecognition.continuous = true;
-      wakeWordRecognition.interimResults = false;
-
-      wakeWordRecognition.onresult = function (event) {
-        let command = event.results[0][0].transcript.toLowerCase();
-        console.log("Wake Word Detection:", command);
-
-        if (command.includes("hello")) {
-          console.log("'Hello' detected! Activating voice recognition...");
-          wakeWordRecognition.stop();
-          startListening();
-        }
-      };
-
-      wakeWordRecognition.onerror = function (event) {
-        console.error("Wake word recognition error:", event.error);
-        setTimeout(detectWakeWord, 5000);
-      };
-
-      wakeWordRecognition.start();
-    }
-
-    detectWakeWord(); // Start continuous wake word detection
-
-    function speak(text) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      speechSynthesis.speak(utterance);
-    }
-
-    function showHelp() {
-      const optionsPanel = document.getElementById('optionsPanel');
-      optionsPanel.style.display = optionsPanel.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function handleEmergency() {
-      speak("Contacting your emergency contact. Please stay calm.");
-      // Future: Send an emergency alert to caregiver dashboard or notify caregiver
-    }
-
-    socket.on('response', (data) => {
-      const status = document.getElementById('status');
-      status.textContent = data.message;
-      
-      if (data.speak) {
-        speak(data.message);
-      }
-
-      if (data.size) {
-        document.body.style.fontSize = data.size + 'px';
-      }
-
-      if (data.contrast !== undefined) {
-        document.body.classList.toggle('high-contrast', data.contrast);
-      }
-
-      if (data.options) {
-        const optionsPanel = document.getElementById('optionsPanel');
-        optionsPanel.innerHTML = data.options.map(option => 
-          `<button class="option-button" onclick="handleOption('${option}')">${option}</button>`
-        ).join('');
-        optionsPanel.style.display = 'block';
-      }
-    });
-
-    updateTime();
-    setInterval(updateTime, 60000);
-
-    function checkMedication() {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      
-      const medTimes = [{h: 9, m: 0}, {h: 13, m: 0}, {h: 18, m: 0}];
-      
-      if (medTimes.some(time => time.h === hours && time.m === minutes)) {
-        document.getElementById('reminder').style.display = 'block';
-        speak("It's time for your medication");
-      }
-    }
-
-    setInterval(checkMedication, 60000);
-  </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

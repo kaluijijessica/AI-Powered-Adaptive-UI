@@ -1,124 +1,86 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const socket = io();
-    let lastCommand = null;
-    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+let recognition;
+let isListening = false;
 
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+// Check for browser support
+if ('webkitSpeechRecognition' in window) {
+  recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
 
-    const micButton = document.getElementById("micButton");
-    const status = document.getElementById("status");
+  recognition.onstart = () => {
+    isListening = true;
+    document.querySelector('.status-message').innerText = "Listening...";
+  };
 
-    // Function to start listening
-    function startListening() {
-        console.log("Voice recognition activated...");
-        status.textContent = "I'm listening...";
-        micButton.classList.add("listening");
-
+  recognition.onend = () => {
+    isListening = false;
+    document.querySelector('.status-message').innerText = "Click 'Speak' or say 'Hello Assistant' to talk.";
+    // Auto-restart if listening mode is active
+    setTimeout(() => {
+      if (!isListening) {
         recognition.start();
+      }
+    }, 1000);
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+    console.log("Recognized:", transcript);
+
+    if (transcript.includes("hello assistant") || transcript.includes("hey assistant")) {
+      document.querySelector('.status-message').innerText = "How can I assist you?";
+    } else {
+      processCommand(transcript);
     }
+  };
 
-    // Handle voice recognition result
-    recognition.onresult = function (event) {
-        const command = event.results[0][0].transcript;
-        console.log("User Command:", command);
-        status.textContent = `I heard: ${command}`;
-        lastCommand = command;
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    document.querySelector('.status-message').innerText = "Error: " + event.error;
+  };
 
-        // Send command to Flask backend
-        socket.emit("command", { command: command });
-    };
+  // Start listening by default
+  recognition.start();
+} else {
+  alert("Your browser does not support speech recognition.");
+}
 
-    // Handle errors
-    recognition.onerror = function (event) {
-        console.error("Recognition error:", event.error);
-        status.textContent = "I couldn't hear you. Please try again.";
-        micButton.classList.remove("listening");
-    };
+// Manual trigger
+function toggleSpeechRecognition() {
+  if (isListening) {
+    recognition.stop();
+  } else {
+    recognition.start();
+  }
+}
 
-    recognition.onend = function () {
-        micButton.classList.remove("listening");
-    };
+// Interpret speech and adapt UI
+function processCommand(transcript) {
+  const reminder = document.querySelector('.reminder');
+  const options = document.querySelector('.options-panel');
+  const caregiver = document.querySelector('.caregiver-panel');
 
-    // Listen for "Hey" wake word activation from backend
-    socket.on("activate_listening", function (data) {
-        console.log("Wake word detected:", data.message);
-        startListening();
-    });
+  if (transcript.includes("remind me") || transcript.includes("reminder")) {
+    reminder.style.display = "block";
+    reminder.innerText = "Don't forget your medication at 6 PM.";
+    options.style.display = "none";
+    caregiver.style.display = "none";
+  } else if (transcript.includes("help")) {
+    options.style.display = "block";
+    reminder.style.display = "none";
+    caregiver.style.display = "none";
+  } else if (transcript.includes("caregiver") || transcript.includes("emergency")) {
+    caregiver.style.display = "block";
+    options.style.display = "none";
+    reminder.style.display = "none";
+  } else {
+    reminder.style.display = "none";
+    options.style.display = "none";
+    caregiver.style.display = "none";
+    document.querySelector('.status-message').innerText = `I didn't understand. Please try again.`;
+  }
+}
 
-    // Handle response from backend
-    socket.on("response", (data) => {
-        console.log("Server Response:", data);
-        status.textContent = data.message;
-
-        if (data.speak) {
-            speak(data.message);
-        }
-
-        if (data.size) {
-            document.body.style.fontSize = data.size + "px";
-        }
-
-        if (data.contrast !== undefined) {
-            document.body.classList.toggle("high-contrast", data.contrast);
-        }
-
-        if (data.options) {
-            const optionsPanel = document.getElementById("optionsPanel");
-            optionsPanel.innerHTML = data.options
-                .map(
-                    (option) =>
-                        `<button class="option-button" onclick="handleOption('${option}')">${option}</button>`
-                )
-                .join("");
-            optionsPanel.style.display = "block";
-        }
-    });
-
-    // Function to trigger speech synthesis
-    function speak(text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        speechSynthesis.speak(utterance);
-    }
-
-    // Update time every minute
-    function updateTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        });
-        const dateString = now.toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-        });
-        document.getElementById("timeDisplay").textContent = `${timeString} on ${dateString}`;
-    }
-
-    // Run update time every minute
-    updateTime();
-    setInterval(updateTime, 60000);
-
-    // Check for medication reminders
-    function checkMedication() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-
-        // Example medication times
-        const medTimes = [{ h: 9, m: 0 }, { h: 13, m: 0 }, { h: 18, m: 0 }];
-
-        if (medTimes.some(time => time.h === hours && time.m === minutes)) {
-            document.getElementById("reminder").style.display = "block";
-            speak("It's time for your medication");
-        }
-    }
-
-    // Check medication times every minute
-    setInterval(checkMedication, 60000);
-});
+// Attach manual button trigger
+document.getElementById('speakButton').addEventListener('click', toggleSpeechRecognition);
