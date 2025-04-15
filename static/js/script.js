@@ -1,125 +1,104 @@
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
+const socket = io();
+const synth = window.speechSynthesis;
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+
+// Debugging flags
+const DEBUG_MODE = true;
+let isProcessing = false;
+
+// Configuration
 recognition.continuous = false;
 recognition.lang = 'en-US';
+recognition.interimResults = false;
 
-// DOM Elements
+// Elements
 const micButton = document.getElementById('micButton');
-const processingStages = {
-    stage1: document.getElementById('stage1'),
-    stage2: document.getElementById('stage2'),
-    stage3: document.getElementById('stage3'),
-    stage4: document.getElementById('stage4')
-};
-const heardCommand = document.getElementById('heardCommand');
-const classificationResult = document.getElementById('classificationResult');
-const actionFeedback = document.getElementById('actionFeedback');
-const dynamicTime = document.getElementById('dynamicTime');
-const emergencyPanel = document.getElementById('emergencyPanel');
-const socket = io();
+const feedbackEl = document.getElementById('statusFeedback');
 
-// Voice Handling
+// Voice setup
+let voices = [];
+synth.onvoiceschanged = () => {
+    voices = synth.getVoices();
+    if(DEBUG_MODE) console.log('Voices loaded:', voices);
+};
+
+// Speech recognition handlers
 micButton.addEventListener('click', () => {
-    if (!recognition.recording) {
-        resetStages();
+    if(!isProcessing) {
         recognition.start();
-        updateStage('stage1', true);
-        updateStage('stage2', true);
+        micButton.classList.add('listening');
+        isProcessing = true;
+        logDebug('🎤 Listening started...');
     }
 });
 
 recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
-    heardCommand.textContent = transcript;
-    socket.emit('voice_command', { text: transcript });
+    logDebug(`🎧 Heard: ${transcript}`);
+    socket.emit('process_command', { text: transcript });
 };
 
-// Socket.IO Handlers
-socket.on('ui_update', (response) => {
-    updateStage('stage3', true);
-    classificationResult.textContent = response.category.replace('_', ' ').toUpperCase();
-    
-    setTimeout(() => {
-        updateStage('stage4', true);
-        actionFeedback.textContent = response.feedback;
-        applyUIModifications(response);
-        speakFeedback(response.feedback);
-    }, 1000);
+recognition.onerror = (event) => {
+    logDebug(`❌ Recognition error: ${event.error}`);
+    updateFeedback("Sorry, I didn't catch that");
+    resetMic();
+};
+
+recognition.onend = () => {
+    resetMic();
+};
+
+// Socket.IO handlers
+socket.on('action_update', (response) => {
+    logDebug(`📡 Server response:`, response);
+    updateFeedback(response.feedback);
+    executeAction(response);
+    speakFeedback(response.feedback);
 });
 
-socket.on('processing_error', (error) => {
-    showError(error.message);
-    resetStages();
+socket.on('error', (error) => {
+    logDebug(`⚠️ Server error: ${error.message}`);
+    updateFeedback(error.message);
 });
 
-// UI Modifications
-function applyUIModifications(response) {
-    const adaptiveTexts = document.querySelectorAll('[data-adaptive-type="text"]');
-    
+// Core functions
+function executeAction(response) {
     switch(response.action) {
-        case 'adjust_text_size':
-            const newSize = response.label.includes('bigger') ? 'var(--font-large)' : 'var(--font-normal)';
-            adaptiveTexts.forEach(el => {
-                el.style.fontSize = newSize;
-                el.style.color = response.label.includes('bigger') ? 'var(--high-contrast)' : 'var(--text-color)';
-            });
+        case 'adjust_text':
+            const newSize = response.direction === 'increase' ? 
+                parseInt(getComputedStyle(document.body).fontSize) * 1.2 :
+                parseInt(getComputedStyle(document.body).fontSize) * 0.8;
+            document.documentElement.style.fontSize = `${newSize}px`;
             break;
-
+            
         case 'adjust_contrast':
-            document.body.classList.toggle('high-contrast');
-            break;
-
-        case 'show_time':
-            dynamicTime.textContent = response.feedback.split(': ')[1];
-            document.getElementById('timeDisplay').classList.remove('hidden');
-            break;
-
-        case 'trigger_emergency':
-            emergencyPanel.classList.remove('hidden');
-            setTimeout(() => {
-                emergencyPanel.classList.add('hidden');
-            }, 5000);
+            document.body.classList.toggle('dark-mode', response.direction === 'dark');
             break;
     }
 }
 
-// Feedback System
 function speakFeedback(text) {
+    if(synth.speaking) synth.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
-    speechSynthesis.speak(utterance);
+    utterance.voice = voices.find(v => v.lang === 'en-US') || voices[0];
+    synth.speak(utterance);
 }
 
-// Stage Management
-function updateStage(stageId, active) {
-    processingStages[stageId].classList.toggle('active', active);
+function updateFeedback(message) {
+    feedbackEl.textContent = message;
+    feedbackEl.classList.remove('hidden');
+    setTimeout(() => feedbackEl.classList.add('hidden'), 3000);
 }
 
-function resetStages() {
-    Object.values(processingStages).forEach(stage => {
-        stage.classList.remove('active');
-        const textElement = stage.querySelector('.stage-text');
-        if (textElement) textElement.textContent = stage.dataset.default;
-    });
+function resetMic() {
+    micButton.classList.remove('listening');
+    isProcessing = false;
 }
 
-// Error Handling
-function showError(message) {
-    const errorPanel = document.getElementById('errorPanel');
-    errorPanel.querySelector('.error-message').textContent = message;
-    errorPanel.setAttribute('aria-hidden', 'false');
-    
-    setTimeout(() => {
-        errorPanel.setAttribute('aria-hidden', 'true');
-    }, 5000);
+function logDebug(...messages) {
+    if(DEBUG_MODE) console.log('[DEBUG]', ...messages);
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    recognition.start();
-    setInterval(() => {
-        document.getElementById('currentTime').textContent = 
-            new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }, 1000);
-});
+// Initial test
+logDebug('Frontend initialized');
+socket.emit('test_connection', { timestamp: Date.now() });

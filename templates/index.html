@@ -1,112 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
-    <title>Care Assistant - Adaptive UI</title>
+    <title>Care Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <meta name="theme-color" content="#2A9D8F">
-    <meta name="description" content="AI-Powered Adaptive Interface for Dementia Care">
 </head>
-<body class="default-mode">
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-
+<body class="light-mode">
     <div class="container">
-        <!-- Status Bar -->
-        <div class="status-bar" role="status" aria-live="polite">
-            <div class="connection-status" aria-label="Connection status">● Connected</div>
-            <div class="current-time" id="currentTime" aria-label="Current time">12:00 PM</div>
-        </div>
-
-        <!-- Main Content -->
-        <main class="main-content" id="main-content" role="main">
-            <!-- Processing Visualization -->
-            <section class="processing-flow" aria-label="Command processing stages">
-                <div class="processing-stage" id="stage1" aria-current="step" data-default="Ready for command">
-                    <span class="stage-icon" aria-hidden="true">🎤</span>
-                    <span class="stage-text">Ready for command</span>
-                </div>
-                
-                <div class="processing-stage" id="stage2" data-default="Heard: ...">
-                    <span class="stage-icon" aria-hidden="true">👂</span>
-                    <span class="stage-text">Heard: <span id="heardCommand" aria-live="polite">...</span></span>
-                </div>
-
-                <div class="processing-stage" id="stage3" data-default="Classifying: ...">
-                    <span class="stage-icon" aria-hidden="true">🤖</span>
-                    <span class="stage-text">Classification: <span id="classificationResult" aria-live="assertive">...</span></span>
-                </div>
-
-                <div class="processing-stage" id="stage4" data-default="Adjusting UI: ...">
-                    <span class="stage-icon" aria-hidden="true">🔄</span>
-                    <span class="stage-text">Action: <span id="actionFeedback" aria-live="polite">...</span></span>
-                </div>
-            </section>
-
-            <!-- Adaptive Content Section -->
-            <div class="adaptive-content" data-adaptive="true">
-                <h1 class="adaptive-text" data-adaptive-type="text">Welcome to Your Care Assistant</h1>
-                <p class="adaptive-text" data-adaptive-type="text">This text will automatically adjust to your needs</p>
-                <div id="timeDisplay" class="time-display hidden" data-adaptive-type="time">
-                    Current Time: <span id="dynamicTime"></span>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions" role="toolbar" aria-label="Quick actions">
-                <button class="action-btn emergency" aria-describedby="emergencyDesc">
-                    🚨 Emergency
-                    <span class="tooltip" id="emergencyDesc">Request immediate assistance</span>
-                </button>
-                <button class="action-btn reminder" aria-describedby="reminderDesc">
-                    💊 Medication
-                    <span class="tooltip" id="reminderDesc">Set medication reminder</span>
-                </button>
-                <button class="action-btn location" aria-describedby="locationDesc">
-                    🏠 Location
-                    <span class="tooltip" id="locationDesc">Get current location</span>
-                </button>
-                <button class="action-btn time" aria-describedby="timeDesc">
-                    🕒 Time
-                    <span class="tooltip" id="timeDesc">Check current time</span>
-                </button>
-            </div>
-
-            <!-- Caregiver Information -->
-            <section class="caregiver-card" aria-label="Caregiver information">
-                <h2>Your Care Team</h2>
-                <div class="caregiver-info">
-                    <p aria-label="Caregiver name">
-                        <span aria-hidden="true">👩⚕️</span> Sarah Johnson
-                    </p>
-                    <p aria-label="Contact number">
-                        <span aria-hidden="true">📞</span> 
-                        <a href="tel:+1234567890" class="contact-link">+1 234 567 890</a>
-                    </p>
-                </div>
-            </section>
-        </main>
-
-        <!-- Voice Controls -->
-        <div class="voice-controls">
-            <button class="fab mic-button" id="micButton" 
-                    aria-label="Start voice command"
-                    aria-describedby="micState"
-                    tabindex="0">
-                🎤
-                <div class="pulse-ring" aria-hidden="true"></div>
-                <span class="state-indicator" id="micState">Click to speak</span>
-            </button>
-        </div>
-
-        <!-- System Alerts -->
-        <div class="emergency-alert hidden" id="emergencyPanel" role="alert">
-            🚨 Emergency assistance contacted
-        </div>
+        <button id="micButton" class="mic-button">
+            🎤 Start Voice Command
+            <div class="pulse-ring"></div>
+        </button>
         
-        <div class="error-panel" id="errorPanel" role="alert" aria-hidden="true">
-            <span class="error-icon" aria-hidden="true">⚠️</span>
-            <span class="error-message"></span>
+        <div id="statusFeedback" class="feedback hidden"></div>
+        
+        <div class="content">
+            <h1>Daily Schedule</h1>
+            <p>9:00 AM - Morning Medication</p>
+            <p>12:00 PM - Lunch</p>
         </div>
     </div>
 

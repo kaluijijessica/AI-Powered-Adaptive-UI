@@ -1,46 +1,40 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from transformers import pipeline
-from datetime import datetime
 import logging
+import os
+
+# Suppress warnings
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SECRET_KEY'] = 'care-assistant-123'
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
 
-# Initialize AI model
+# Debugging classifier
 classifier = pipeline(
     "zero-shot-classification",
-    model="facebook/bart-large-mnli",
-    device=-1
+    model="typeform/distilbert-base-uncased-mnli",
+    device=-1  # Force CPU
 )
 
 COMMAND_CONFIG = {
     'text_size': {
-        'labels': ['bigger', 'smaller', 'increase text', 'decrease text'],
-        'ui_action': 'adjust_text_size',
-        'feedback': {
-            'bigger': 'Increasing text size for better readability',
-            'smaller': 'Reducing text size for compact view'
+        'labels': ['bigger text', 'smaller text', 'increase size', 'decrease size'],
+        'action': 'adjust_text',
+        'responses': {
+            'increase': 'Text enlarged',
+            'decrease': 'Text reduced'
         }
     },
     'contrast': {
-        'labels': ['higher contrast', 'lower contrast', 'brighter', 'darker'],
-        'ui_action': 'adjust_contrast',
-        'feedback': {
-            'higher': 'Enhancing contrast for clearer viewing',
-            'lower': 'Reducing contrast for comfortable reading'
+        'labels': ['dark mode', 'light mode', 'toggle contrast'],
+        'action': 'adjust_contrast',
+        'responses': {
+            'dark': 'Dark mode activated',
+            'light': 'Light mode activated',
+            'toggle': 'Contrast changed'
         }
-    },
-    'time': {
-        'labels': ['current time', 'what time is it', 'time'],
-        'ui_action': 'show_time',
-        'feedback': 'Current time is {time}'
-    },
-    'emergency': {
-        'labels': ['help', 'emergency', 'danger'],
-        'ui_action': 'trigger_emergency',
-        'feedback': 'Contacting your caregiver Sarah Johnson'
     }
 }
 
@@ -48,58 +42,55 @@ COMMAND_CONFIG = {
 def index():
     return render_template('index.html')
 
-@socketio.on('voice_command')
-def handle_voice_command(data):
+@socketio.on('process_command')
+def handle_command(data):
     try:
-        transcript = data['text'].lower()
-        response = None
+        print(f"\n🔧 RAW INPUT: {data['text']}")
+        transcript = data['text'].lower().strip()
         
-        # Check static matches first
-        for category, config in COMMAND_CONFIG.items():
-            for label in config['labels']:
-                if label in transcript:
-                    response = create_response(category, label, config, transcript)
-                    break
-            if response: break
-        
-        # AI classification fallback
-        if not response:
-            result = classifier(
-                transcript,
-                candidate_labels=list(COMMAND_CONFIG.keys()),
-                multi_label=False
-            )
-            category = result['labels'][0]
-            config = COMMAND_CONFIG[category]
-            response = create_response(category, transcript, config, transcript)
+        # Force test command
+        if "test" in transcript:
+            print("🔥 TEST COMMAND RECEIVED")
+            socketio.emit('action_update', {
+                'action': 'adjust_text',
+                'direction': 'increase',
+                'feedback': 'Test successful!'
+            })
+            return
 
-        socketio.emit('ui_update', response)
+        # Real classification
+        candidate_labels = [label for config in COMMAND_CONFIG.values() for label in config['labels']]
+        result = classifier(transcript, candidate_labels)
+        print(f"🎯 CLASSIFICATION RESULT: {result}")
+        
+        if result['scores'][0] < 0.4:
+            raise ValueError("Low confidence")
+            
+        top_label = result['labels'][0]
+        print(f"🏆 BEST MATCH: {top_label}")
+
+        # Find matching action
+        response = None
+        for category, config in COMMAND_CONFIG.items():
+            if top_label in config['labels']:
+                direction = 'increase' if 'bigger' in top_label or 'increase' in top_label else 'decrease'
+                response = {
+                    'action': config['action'],
+                    'direction': direction,
+                    'feedback': config['responses'][direction]
+                }
+                break
+
+        if response:
+            print(f"🚀 SENDING RESPONSE: {response}")
+            socketio.emit('action_update', response)
+        else:
+            raise ValueError("No matching command")
 
     except Exception as e:
-        logging.error(f"Processing error: {str(e)}")
-        socketio.emit('processing_error', {'message': str(e)})
-
-def create_response(category, label, config, transcript):
-    response = {
-        'transcript': transcript,
-        'category': category,
-        'action': config['ui_action'],
-        'label': label,
-        'timestamp': datetime.now().isoformat()
-    }
-    
-    # Handle feedback
-    if isinstance(config['feedback'], dict):
-        response['feedback'] = config['feedback'].get(label.split()[0], "Adjustment completed")
-    else:
-        if '{time}' in config['feedback']:
-            response['feedback'] = config['feedback'].format(
-                time=datetime.now().strftime('%H:%M')
-            )
-        else:
-            response['feedback'] = config['feedback']
-    
-    return response
+        print(f"❌ ERROR: {str(e)}")
+        socketio.emit('error', {'message': "Let's try that again"})
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    print("🚀 Server starting...")
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
