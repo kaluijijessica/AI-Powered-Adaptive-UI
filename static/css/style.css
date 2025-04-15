@@ -1,147 +1,268 @@
+/* static/css/style.css */
 :root {
-  --text-color: #333;
-  --bg-color: #eaf6f6;
-  --container-bg: #ffffff;
-  --primary-color: #4CAF50;
-  --danger-color: #f44336;
-  --button-padding: 16px;
-  --font-size-large: 1.4em;
-  --accent-blue: #0097A7;
-  --soft-yellow: #fff9c4;
-  --soft-orange: #ffe0b2;
+  /* Color Scheme */
+  --primary-color: #2A9D8F;
+  --danger-color: #E76F51;
+  --background: #F8F9FA;
+  --text-color: #2B2D42;
+  --highlight: #FFD166;
+  --success: #06D6A0;
+  --error: #EF476F;
+  
+  /* Typography */
+  --font-base: 1rem;
+  --font-large: 1.5rem;
+  --font-xlarge: 2rem;
+  
+  /* Spacing */
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  
+  /* Borders */
+  --border-radius: 0.5rem;
+  --border-width: 2px;
 }
 
+/* Base Styles */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: var(--bg-color);
+  font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
+  background-color: var(--background);
   color: var(--text-color);
-  font-size: 18px;
-  -webkit-tap-highlight-color: transparent;
+  line-height: 1.6;
+  font-size: var(--font-base);
 }
 
-.container {
-  background: var(--container-bg);
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  max-width: 620px;
-  margin: auto;
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.time-display {
-  font-size: var(--font-size-large);
-  margin: 10px 0;
-  padding: 12px;
-  background: var(--accent-blue);
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--space-sm);
+  background: var(--primary-color);
   color: white;
-  border-radius: 12px;
 }
 
-.content-area {
-  margin-bottom: 20px;
-  text-align: center;
+/* Layout */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-lg);
 }
 
-.reminder {
-  background: var(--soft-orange);
-  padding: 15px;
-  border-radius: 12px;
-  margin: 15px 0;
-  display: none;
-  text-align: center;
-  font-size: var(--font-size-large);
-}
-
-.control-panel {
+.status-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+
+/* Processing Stages */
+.processing-flow {
+  display: grid;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.processing-stage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: rgba(255,255,255,0.9);
+  border-radius: var(--border-radius);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.processing-stage[aria-current="step"] {
+  opacity: 1;
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.02);
+}
+
+.stage-icon {
+  font-size: var(--font-large);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: varrgba(113, 100, 100, 0.9)
+  border: var(--border-width) solid var(--primary-color);
+  border-radius: var(--border-radius);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.action-btn:hover, 
+.action-btn:focus {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-color);
+  color: white;
+  padding: var(--space-sm);
+  border-radius: var(--border-radius);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.action-btn:hover .tooltip {
+  opacity: 1;
+}
+
+/* Caregiver Card */
+.caregiver-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+  margin-top: var(--space-lg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contact-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.contact-link:hover {
+  border-bottom-color: currentColor;
+}
+
+/* Voice Controls */
+.voice-controls {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.fab {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
 }
 
-.button {
-  padding: var(--button-padding);
-  border: none;
-  border-radius: 25px;
-  font-size: 1em;
-  cursor: pointer;
-  flex: 1 1 40%;
-  min-width: 130px;
-  margin: 5px;
-  transition: transform 0.2s ease;
+.fab:active {
+  transform: scale(0.95);
 }
 
-.button:hover {
-  transform: scale(1.05);
-}
-
-.primary-button {
-  background-color: var(--primary-color);
-  color: #fff;
-}
-
-.help-button {
-  background-color: #ff9800;
-  color: #fff;
-}
-
-.emergency-button {
-  background-color: var(--danger-color);
-  color: #fff;
-}
-
-.options-panel {
-  display: none;
-  margin-top: 15px;
-  padding: 12px;
-  background: var(--soft-yellow);
-  border-radius: 10px;
-}
-
-.option-button {
+.pulse-ring {
+  position: absolute;
   width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: #f0f0f0;
-  margin: 6px 0;
-  font-size: 1em;
-  cursor: pointer;
+  height: 100%;
+  border: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
 }
 
-.option-button:hover {
-  background: #e0e0e0;
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
 }
 
-.status-message {
-  text-align: center;
-  margin-top: 20px;
-  padding: 15px;
-  background: #b2ebf2;
-  color: #004d40;
-  border-radius: 10px;
+/* Error Panel */
+.error-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--error);
+  color: white;
+  padding: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: center;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
 }
 
-.caregiver-panel {
-  display: none;
-  margin-top: 20px;
-  padding: 15px;
-  background: #fffde7;
-  border-radius: 10px;
-  font-size: 1em;
-  color: #333;
+.error-panel[aria-hidden="false"] {
+  transform: translateY(0);
 }
 
+.confidence-warning {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff9800;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.emergency-mode {
+  animation: emergencyFlash 1s infinite;
+}
+
+@keyframes emergencyFlash {
+  0% { background: #ffffff; }
+  50% { background: #ffcccc; }
+  100% { background: #ffffff; }
+}
+
+/* Responsive Design */
 @media (max-width: 600px) {
-  .button, .option-button {
-    font-size: 1.2em;
+  .container {
+      padding: var(--space-md);
+  }
+  
+  .quick-actions {
+      grid-template-columns: 1fr;
+  }
+  
+  .fab {
+      width: 56px;
+      height: 56px;
   }
 }
