@@ -27,74 +27,80 @@
     </div>
 
     <div class="container">
-        <header>
+      <header>
+        <div class="header-row">
             <h1 class="main-title">My Care Helper</h1>
-            <div class="date-display">
-                <span id="currentDay">Today</span>
-                <span id="currentDate">April 15</span>
-            </div>
-        </header>
-        
-        <!-- Daily essentials -->
-        <div class="daily-essentials">
-            <div class="weather-widget">
-                <div class="weather-icon">☀️</div>
-                <div class="weather-info">72°F</div>
-            </div>
-            <div class="time-widget">
-                <span id="currentTime">3:45 PM</span>
-            </div>
-        </div>
-        
-        <!-- Schedule content -->
-        <div class="content">
-            <h2 class="section-title">Today's Plan</h2>
-            <div class="schedule-items">
-                <div class="schedule-item">
-                    <div class="schedule-time">9:00 AM</div>
-                    <div class="schedule-activity">
-                        <span class="activity-text">Morning Medicine</span>
-                        <span class="activity-icon">💊</span>
-                    </div>
+            <div class="header-info">
+                <div class="date-display">
+                    <span id="currentDay">Today</span>
+                    <span id="currentDate">April 15</span>
                 </div>
-                <div class="schedule-item">
-                    <div class="schedule-time">12:00 PM</div>
-                    <div class="schedule-activity">
-                        <span class="activity-text">Lunch Time</span>
-                        <span class="activity-icon">🍽️</span>
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="schedule-time">3:00 PM</div>
-                    <div class="schedule-activity">
-                        <span class="activity-text">Walk in Garden</span>
-                        <span class="activity-icon">🌳</span>
-                    </div>
+                <div class="weather-time">
+                    <span class="weather-icon">☀️ 72°F</span>
+                    <span id="currentTime">3:45 PM</span>
                 </div>
             </div>
         </div>
-        
-        <!-- Reminders -->
-        <div class="reminders">
-            <div class="reminder-item">
-                <span class="reminder-icon">👨‍⚕️</span>
-                <span class="reminder-text">Doctor visit tomorrow</span>
-            </div>
-        </div>
+    </header>
 
-        <!-- Voice control -->
-        <div class="voice-control-section">
-            <button id="micButton" class="mic-button">
-                <span class="mic-icon">🎤</span>
-                <span class="mic-text">Talk to Me</span>
-                <div class="pulse-ring"></div>
-            </button>
-            <div id="statusFeedback" class="feedback hidden">Ready...</div>
-        </div>
+    <!-- Rectangular Voice Control -->
+    <div class="voice-control-section">
+        <button id="micButton" class="mic-button rectangular">
+            <span class="mic-icon">🎤 Talk to Me</span>
+            <div class="pulse-ring"></div>
+        </button>
+        <div id="statusFeedback" class="feedback hidden">Ready...</div>
+    </div>
+    <footer class="footer">
+      <p>Ask "Where am I?" or "What's my name?" for help</p>
+  </footer>
 
-        <footer class="footer">
-            <p>Ask "Where am I?" or "What's my name?" for help</p>
-        </footer>
+    <!-- Content Area -->
+     <!-- Schedule content -->
+     <div class="content">
+      <h2 class="section-title">Today's Plan</h2>
+      <div class="schedule-items">
+          <div class="schedule-item">
+              <div class="schedule-time">9:00 AM</div>
+              <div class="schedule-activity">
+                  <span class="activity-text">Morning Medicine</span>
+                  <span class="activity-icon">💊</span>
+              </div>
+          </div>
+          <div class="schedule-item">
+              <div class="schedule-time">12:00 PM</div>
+              <div class="schedule-activity">
+                  <span class="activity-text">Lunch Time</span>
+                  <span class="activity-icon">🍽️</span>
+              </div>
+          </div>
+          <div class="schedule-item">
+              <div class="schedule-time">3:00 PM</div>
+              <div class="schedule-activity">
+                  <span class="activity-text">Walk in Garden</span>
+                  <span class="activity-icon">🌳</span>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Reminders -->
+  <div class="reminders">
+      <div class="reminder-item">
+          <span class="reminder-icon">👨‍⚕️</span>
+          <span class="reminder-text">Doctor visit tomorrow</span>
+      </div>
+  </div>
+
+    
+            
+      
+        
+       
+
+       
+
+        
     </div>
 
     <!-- Socket.IO Connection -->
@@ -204,5 +210,22 @@
             document.body.appendChild(altScript);
         }
     </script>
+    <script>
+        // Add to DOMContentLoaded event
+         // Add to DOMContentLoaded event
+function adjustLayout() {
+  const container = document.querySelector('.container');
+  const availableHeight = window.innerHeight - 20; // 20px buffer
+  
+  if (container.scrollHeight > availableHeight) {
+    document.querySelector('.content').style.maxHeight = 
+      `${availableHeight - 300}px`; // Adjust based on your header/footer heights
+  }
+}
+
+window.addEventListener('resize', adjustLayout);
+adjustLayout(); // Initial call
+    </script>
+
 </body>
 </html>
