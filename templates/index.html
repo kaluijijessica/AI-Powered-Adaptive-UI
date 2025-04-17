@@ -1,26 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Care Assistant</title>
+    <!-- Preload critical assets -->
+    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Preconnect to socket.io server -->
+    <link rel="preconnect" href="https://cdn.socket.io">
+    <!-- Add accessibility meta tags -->
+    <meta name="description" content="Care Assistant application for daily schedule and personal information">
 </head>
 <body class="light-mode">
+    <!-- Identity card moved to top for better positioning -->
+    <div id="identityDisplay" class="hidden identity-card">
+        <!-- Content will be injected by JavaScript -->
+    </div>
+    
     <div class="container">
-        <button id="micButton" class="mic-button">
-            🎤 Start Voice Command
-            <div class="pulse-ring"></div>
-        </button>
+        <header>
+            <h1 class="main-title">My Care Helper</h1>
+            <div class="date-display">
+                <span id="currentDay">Today</span>
+                <span id="currentDate">April 15</span>
+            </div>
+        </header>
         
-        <div id="statusFeedback" class="feedback hidden"></div>
+        <!-- Daily essentials - immediately visible info -->
+        <div class="daily-essentials">
+            <div class="weather-widget">
+                <div class="weather-icon">☀️</div>
+                <div class="weather-info">72°F</div>
+            </div>
+            <div class="time-widget">
+                <span id="currentTime">3:45 PM</span>
+            </div>
+        </div>
         
         <div class="content">
-            <h1>Daily Schedule</h1>
-            <p>9:00 AM - Morning Medication</p>
-            <p>12:00 PM - Lunch</p>
+            <h2 class="section-title">Today's Plan</h2>
+            <div class="schedule-items">
+                <div class="schedule-item">
+                    <div class="schedule-time">9:00 AM</div>
+                    <div class="schedule-activity">
+                        <span class="activity-text">Morning Medicine</span>
+                        <span class="activity-icon">💊</span>
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">12:00 PM</div>
+                    <div class="schedule-activity">
+                        <span class="activity-text">Lunch Time</span>
+                        <span class="activity-icon">🍽️</span>
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">3:00 PM</div>
+                    <div class="schedule-activity">
+                        <span class="activity-text">Walk in Garden</span>
+                        <span class="activity-icon">🌳</span>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        <div class="reminders">
+            <div class="reminder-item">
+                <span class="reminder-icon">👨‍⚕️</span>
+                <span class="reminder-text">Doctor visit tomorrow</span>
+            </div>
+        </div>
+
+        <div class="voice-control-section">
+            <button id="micButton" class="mic-button">
+                <span class="mic-icon">🎤</span>
+                <span class="mic-text">Talk to Me</span>
+                <div class="pulse-ring"></div>
+            </button>
+            
+            <div id="statusFeedback" class="feedback hidden">Ready...</div>
+        </div>
+
+        <footer class="footer">
+            <p>Ask "Where am I?" or "What's my name?" for help</p>
+        </footer>
     </div>
 
+    <!-- Defer non-critical JavaScript -->
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script>
+        // Add this to check if Socket.IO loads
+        console.log('Socket.IO script loaded');
+        if (typeof io !== 'undefined') {
+            console.log('io object available');
+        } else {
+            console.error('io object NOT available');
+        }
+    </script>
+    
+    <!-- FIX: Updated path to ensure correct capitalization -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <!-- Alternate JS path if the above doesn't work -->
+    <script>
+        // Fallback script loader to handle potential path issues
+        if (!window.scriptLoaded) {
+            console.error('Main script did not load, trying alternate path');
+            const altScript = document.createElement('script');
+            altScript.src = "/static/JS/script.js"; // Try capitalized version
+            document.body.appendChild(altScript);
+        }
+    </script>
+    
+    <script>
+        // Update date and time - doesn't affect core functionality
+        function updateDateTime() {
+            const now = new Date();
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            document.getElementById('currentDay').textContent = days[now.getDay()];
+            document.getElementById('currentDate').textContent = `${months[now.getMonth()]} ${now.getDate()}`;
+            
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+            
+            document.getElementById('currentTime').textContent = `${hours}:${minutesStr} ${ampm}`;
+            
+            setTimeout(updateDateTime, 60000); // Update every minute
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            
+            // Add test buttons for direct testing
+            const testArea = document.createElement('div');
+            testArea.style.margin = '1rem';
+            testArea.style.padding = '1rem';
+            testArea.style.border = '1px solid #ccc';
+            testArea.style.borderRadius = '8px';
+            testArea.innerHTML = `
+                <h3>Test Controls</h3>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button id="testDark" style="padding: 0.5rem; background: #333; color: white; border: none; border-radius: 4px;">Test Dark Mode</button>
+                    <button id="testLight" style="padding: 0.5rem; background: #f0f0f0; color: #333; border: none; border-radius: 4px;">Test Light Mode</button>
+                    <button id="testBigger" style="padding: 0.5rem; background: #4a6da7; color: white; border: none; border-radius: 4px;">Test Bigger Text</button>
+                    <button id="testSmaller" style="padding: 0.5rem; background: #4a6da7; color: white; border: none; border-radius: 4px;">Test Smaller Text</button>
+                </div>
+            `;
+            document.body.appendChild(testArea);
+            
+            // Add event listeners for test buttons
+            document.getElementById('testDark').addEventListener('click', function() {
+                console.log('Testing dark mode via button');
+                if (window.testDarkMode) window.testDarkMode();
+                else console.error('testDarkMode function not found');
+            });
+            
+            document.getElementById('testLight').addEventListener('click', function() {
+                console.log('Testing light mode via button');
+                if (window.testLightMode) window.testLightMode();
+                else console.error('testLightMode function not found');
+            });
+            
+            document.getElementById('testBigger').addEventListener('click', function() {
+                console.log('Testing bigger text via button');
+                if (window.testIncreaseText) window.testIncreaseText();
+                else console.error('testIncreaseText function not found');
+            });
+            
+            document.getElementById('testSmaller').addEventListener('click', function() {
+                console.log('Testing smaller text via button');
+                if (window.testDecreaseText) window.testDecreaseText();
+                else console.error('testDecreaseText function not found');
+            });
+        });
+    </script>
 </body>
 </html>

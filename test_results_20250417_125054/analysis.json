@@ -1,0 +1,14 @@
+{
+  "total_tests": 3,
+  "successful_tests": 0,
+  "success_rate": 0.0,
+  "average_latency": 0.27799518903096515,
+  "min_latency": 0.27127575874328613,
+  "max_latency": 0.2817389965057373,
+  "action_metrics": {
+    "error": {
+      "success_rate": 0.0,
+      "avg_latency": 0.27799518903096515
+    }
+  }
+}

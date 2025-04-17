@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test UI Actions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #2870b8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5e98d4;
+        }
+        h1, h2 {
+            color: #2870b8;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #2870b8;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>UI Action Test Page</h1>
+    <p>This page allows you to directly test UI actions without using voice commands.</p>
+    
+    <div class="test-group">
+        <h2>Contrast Mode Tests</h2>
+        <div class="test-buttons">
+            <button onclick="location.href='/test/adjust_contrast/dark'">Test Dark Mode</button>
+            <button onclick="location.href='/test/adjust_contrast/light'">Test Light Mode</button>
+        </div>
+    </div>
+    
+    <div class="test-group">
+        <h2>Text Size Tests</h2>
+        <div class="test-buttons">
+            <button onclick="location.href='/test/adjust_text/increase'">Increase Text Size</button>
+            <button onclick="location.href='/test/adjust_text/decrease'">Decrease Text Size</button>
+        </div>
+    </div>
+    
+    <div class="test-group">
+        <h2>Identity Test</h2>
+        <div class="test-buttons">
+            <button onclick="location.href='/test/show_identity/default'">Show Identity</button>
+        </div>
+    </div>
+    
+    <a href="/" class="back-link">← Back to Main App</a>
+</body>
+</html>

@@ -1,0 +1,4 @@
+command,expected_action,expected_direction,actual_action,actual_direction,latency,success,error_message,timestamp
+what time is it,error,,error,,0.2817389965057373,False,Let me clarify that,2025-04-17T12:51:14.283533
+call my daughter,error,,show_identity,,0.27127575874328613,False,,2025-04-17T12:51:15.055609
+play some music,error,,error,,0.28097081184387207,False,Let me clarify that,2025-04-17T12:51:15.837145

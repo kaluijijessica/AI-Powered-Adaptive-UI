@@ -1,0 +1,16 @@
+{
+  "success_rate_by_command": {
+    "adjust_contrast": 90.0,
+    "adjust_text": 44.44444444444444,
+    "error": 0.0,
+    "show_identity": 100.0
+  },
+  "latency_by_command": {
+    "adjust_contrast": 0.04419887065887451,
+    "adjust_text": 0.2946221563551161,
+    "error": 0.27799518903096515,
+    "show_identity": 0.06315479278564454
+  },
+  "overall_success_rate": 66.66666666666666,
+  "overall_latency": 0.1571610238817003
+}
