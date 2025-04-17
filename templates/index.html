@@ -14,11 +14,18 @@
     <meta name="description" content="Care Assistant application for daily schedule and personal information">
 </head>
 <body class="light-mode">
-    <!-- Identity card moved to top for better positioning -->
+    <!-- Identity card -->
     <div id="identityDisplay" class="hidden identity-card">
         <!-- Content will be injected by JavaScript -->
     </div>
-    
+
+    <!-- Dementia-friendly additions -->
+    <button id="helpButton" class="help-floating" aria-label="Help">❓</button>
+    <div class="accessibility-controls">
+        <button onclick="adjustTextSize('increase')" aria-label="Increase text size">A+</button>
+        <button onclick="adjustTextSize('decrease')" aria-label="Decrease text size">A-</button>
+    </div>
+
     <div class="container">
         <header>
             <h1 class="main-title">My Care Helper</h1>
@@ -28,7 +35,7 @@
             </div>
         </header>
         
-        <!-- Daily essentials - immediately visible info -->
+        <!-- Daily essentials -->
         <div class="daily-essentials">
             <div class="weather-widget">
                 <div class="weather-icon">☀️</div>
@@ -39,6 +46,7 @@
             </div>
         </div>
         
+        <!-- Schedule content -->
         <div class="content">
             <h2 class="section-title">Today's Plan</h2>
             <div class="schedule-items">
@@ -66,6 +74,7 @@
             </div>
         </div>
         
+        <!-- Reminders -->
         <div class="reminders">
             <div class="reminder-item">
                 <span class="reminder-icon">👨‍⚕️</span>
@@ -73,13 +82,13 @@
             </div>
         </div>
 
+        <!-- Voice control -->
         <div class="voice-control-section">
             <button id="micButton" class="mic-button">
                 <span class="mic-icon">🎤</span>
                 <span class="mic-text">Talk to Me</span>
                 <div class="pulse-ring"></div>
             </button>
-            
             <div id="statusFeedback" class="feedback hidden">Ready...</div>
         </div>
 
@@ -88,10 +97,10 @@
         </footer>
     </div>
 
-    <!-- Defer non-critical JavaScript -->
+    <!-- Socket.IO Connection -->
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script>
-        // Add this to check if Socket.IO loads
+        // Socket.IO connection check
         console.log('Socket.IO script loaded');
         if (typeof io !== 'undefined') {
             console.log('io object available');
@@ -99,27 +108,15 @@
             console.error('io object NOT available');
         }
     </script>
-    
-    <!-- FIX: Updated path to ensure correct capitalization -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    
-    <!-- Alternate JS path if the above doesn't work -->
+
+    <!-- Main Application Script -->
     <script>
-        // Fallback script loader to handle potential path issues
-        if (!window.scriptLoaded) {
-            console.error('Main script did not load, trying alternate path');
-            const altScript = document.createElement('script');
-            altScript.src = "/static/JS/script.js"; // Try capitalized version
-            document.body.appendChild(altScript);
-        }
-    </script>
-    
-    <script>
-        // Update date and time - doesn't affect core functionality
+        // Date/time updates
         function updateDateTime() {
             const now = new Date();
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
+                          'August', 'September', 'October', 'November', 'December'];
             
             document.getElementById('currentDay').textContent = days[now.getDay()];
             document.getElementById('currentDate').textContent = `${months[now.getMonth()]} ${now.getDate()}`;
@@ -128,59 +125,84 @@
             const minutes = now.getMinutes();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = hours ? hours : 12;
             const minutesStr = minutes < 10 ? '0' + minutes : minutes;
             
             document.getElementById('currentTime').textContent = `${hours}:${minutesStr} ${ampm}`;
             
-            setTimeout(updateDateTime, 60000); // Update every minute
+            setTimeout(updateDateTime, 60000);
         }
-        
+
+        // Text size adjustment
+        function adjustTextSize(action) {
+            const root = document.documentElement;
+            const currentSize = parseFloat(getComputedStyle(root).fontSize);
+            root.style.fontSize = action === 'increase' 
+                ? `${currentSize * 1.15}px`
+                : `${currentSize * 0.85}px`;
+        }
+
+        // Initialize application
         document.addEventListener('DOMContentLoaded', function() {
             updateDateTime();
             
-            // Add test buttons for direct testing
+            // Help button functionality
+            document.getElementById('helpButton').addEventListener('click', function() {
+                document.getElementById('identityDisplay').classList.toggle('hidden');
+            });
+
+            // Test controls
             const testArea = document.createElement('div');
-            testArea.style.margin = '1rem';
-            testArea.style.padding = '1rem';
-            testArea.style.border = '1px solid #ccc';
-            testArea.style.borderRadius = '8px';
+            testArea.style.cssText = 'margin:1rem;padding:1rem;border:1px solid #ccc;border-radius:8px;';
             testArea.innerHTML = `
                 <h3>Test Controls</h3>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                    <button id="testDark" style="padding: 0.5rem; background: #333; color: white; border: none; border-radius: 4px;">Test Dark Mode</button>
-                    <button id="testLight" style="padding: 0.5rem; background: #f0f0f0; color: #333; border: none; border-radius: 4px;">Test Light Mode</button>
-                    <button id="testBigger" style="padding: 0.5rem; background: #4a6da7; color: white; border: none; border-radius: 4px;">Test Bigger Text</button>
-                    <button id="testSmaller" style="padding: 0.5rem; background: #4a6da7; color: white; border: none; border-radius: 4px;">Test Smaller Text</button>
+                <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                    <button id="testDark" style="padding:0.5rem;background:#333;color:white;border:none;border-radius:4px;">
+                        Test Dark Mode
+                    </button>
+                    <button id="testLight" style="padding:0.5rem;background:#f0f0f0;color:#333;border:none;border-radius:4px;">
+                        Test Light Mode
+                    </button>
+                    <button id="testBigger" style="padding:0.5rem;background:#4a6da7;color:white;border:none;border-radius:4px;">
+                        Test Bigger Text
+                    </button>
+                    <button id="testSmaller" style="padding:0.5rem;background:#4a6da7;color:white;border:none;border-radius:4px;">
+                        Test Smaller Text
+                    </button>
                 </div>
             `;
             document.body.appendChild(testArea);
-            
-            // Add event listeners for test buttons
+
+            // Test button handlers
             document.getElementById('testDark').addEventListener('click', function() {
-                console.log('Testing dark mode via button');
-                if (window.testDarkMode) window.testDarkMode();
-                else console.error('testDarkMode function not found');
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
             });
             
             document.getElementById('testLight').addEventListener('click', function() {
-                console.log('Testing light mode via button');
-                if (window.testLightMode) window.testLightMode();
-                else console.error('testLightMode function not found');
+                document.body.classList.add('light-mode');
+                document.body.classList.remove('dark-mode');
             });
             
             document.getElementById('testBigger').addEventListener('click', function() {
-                console.log('Testing bigger text via button');
                 if (window.testIncreaseText) window.testIncreaseText();
-                else console.error('testIncreaseText function not found');
             });
             
             document.getElementById('testSmaller').addEventListener('click', function() {
-                console.log('Testing smaller text via button');
                 if (window.testDecreaseText) window.testDecreaseText();
-                else console.error('testDecreaseText function not found');
             });
         });
+    </script>
+    
+    <!-- External Script Fallback -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        if (!window.scriptLoaded) {
+            console.error('Main script did not load, trying alternate path');
+            const altScript = document.createElement('script');
+            altScript.src = "/static/JS/script.js";
+            document.body.appendChild(altScript);
+        }
     </script>
 </body>
 </html>

@@ -1,14 +1,142 @@
+/* Dementia-Friendly Additions Start */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+
+:root {
+  /* New dementia-friendly variables */
+  --contrast-orange: #FF6B35;
+  --help-background: #FFE082;
+  --text-size-control: 20px;
+  --dementia-card-bg: #FFF3E0;
+  --dementia-reminder-bg: #FFEBEE;
+}
+
+/* Help Button */
+.help-floating {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  background: var(--contrast-orange);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Text Size Controls */
+.accessibility-controls {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+
+.accessibility-controls button {
+  padding: 1rem;
+  font-size: 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 60px;
+  line-height: 1;
+}
+
+/* Enhanced Time Display */
+#currentTime {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  display: block;
+  margin: 1rem 0;
+}
+
+/* Dementia-Friendly Schedule Items */
+.schedule-item {
+  padding: 1.5rem !important;
+  margin: 1rem 0 !important;
+  background-color: var(--dementia-card-bg) !important;
+}
+
+.schedule-time {
+  font-size: 1.8rem !important;
+  min-width: 110px !important;
+}
+
+.activity-text {
+  font-size: 1.8rem !important;
+  margin-left: 1.5rem !important;
+}
+
+/* High Contrast Reminders */
+.reminder-item {
+  padding: 1.2rem !important;
+  border-left-width: 6px !important;
+  background-color: var(--dementia-reminder-bg) !important;
+}
+
+.reminder-text {
+  font-size: 1.6rem !important;
+}
+
+/* Voice Control Enhancements */
+.mic-button {
+  width: 120px !important;
+  height: 120px !important;
+  font-size: 3rem !important;
+  border-radius: 50% !important;
+}
+
+.pulse-ring {
+  width: 140px !important;
+  height: 140px !important;
+}
+
+/* Date Display Enhancements */
+.date-display {
+  padding: 1.5rem !important;
+  border-radius: 12px !important;
+  margin-bottom: 2rem !important;
+  background: #E3F2FD !important;
+}
+
+#currentDay {
+  font-size: 1.8rem !important;
+  display: block !important;
+}
+
+#currentDate {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+}
+
+/* Dementia-Friendly Font Stack */
+body {
+  font-family: 'Open Sans', 'Segoe UI', 'Arial', sans-serif;
+}
+
+/* Dementia-Friendly Additions End */
+
+/* Original CSS Below - Remain Unchanged */
 /* Base styles with dementia-friendly optimizations */
 :root {
-  /* Dementia-friendly color palette - higher contrast, softer tones */
-  --primary-color: #2870b8; /* Brighter blue that's still soft */
+  --primary-color: #2870b8;
   --primary-color-light: #5e98d4;
-  --background-light: #f8f8f8; /* Simple, clean background */
-  --background-dark: #222233; /* Softer dark mode */
-  --text-light: #16161d; /* Almost black but not harsh */
-  --text-dark: #ffffff; /* Pure white for best contrast in dark mode */
-  --highlight-color: #f4a261; /* Warm orange for important items */
-  --success-color: #4caf50; /* Clear green */
+  --background-light: #f8f8f8;
+  --background-dark: #222233;
+  --text-light: #16161d;
+  --text-dark: #ffffff;
+  --highlight-color: #f4a261;
+  --success-color: #4caf50;
   --border-color: #d0d0d0;
   --card-background-light: #ffffff;
   --card-background-dark: #333344;
@@ -17,39 +145,35 @@
   --transition-time: 0.3s;
   --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   --box-shadow-dark: 0 2px 8px rgba(0, 0, 0, 0.3);
-  
-  /* Typography - optimized for no scrolling */
   --base-font-size: 18px;
   --large-font-size: 22px;
   --heading-font-size: 24px;
   --xlarge-font-size: 32px;
 }
 
-/* Reset with accessibility focus */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  /* Transitions for better UX but limited to reduce visual confusion */
   transition: background-color var(--transition-time) ease, 
               color var(--transition-time) ease,
               transform 0.2s ease;
 }
 
-/* Base typography optimized for readability */
 html, body {
-  font-family: 'Segoe UI', 'Arial', sans-serif; /* Familiar, highly readable fonts */
+  font-family: 'Segoe UI', 'Arial', sans-serif;
   font-size: var(--base-font-size);
   margin: 0;
   padding: 0;
   line-height: 1.5;
-  height: 100%; /* Full height for proper centering */
+  height: 100vh;
+  width: 100vw;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow : hidden;
 }
 
-/* Light and Dark Modes with dementia-friendly contrast */
 .light-mode {
   background-color: var(--background-light);
   color: var(--text-light);
@@ -60,19 +184,17 @@ html, body {
   color: var(--text-dark);
 }
 
-/* Layout container designed for mobile-first */
 .container {
   width: 100%;
-  max-width: 480px; /* Optimized for mobile */
+  max-width: 480px;
   margin: 0 auto;
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Consistent spacing between sections */
-  min-height: 100%; /* Take at least full height */
+  gap: 1rem;
+  min-height: 100%;
 }
 
-/* Header styling - prominent and clear */
 header {
   text-align: center;
   padding-top: 0.5rem;
@@ -96,7 +218,6 @@ header {
   gap: 0.5rem;
 }
 
-/* Daily essentials - weather and time */
 .daily-essentials {
   display: flex;
   justify-content: space-between;
@@ -134,7 +255,6 @@ header {
   color: var(--primary-color);
 }
 
-/* Content area - clear, structured layout optimized for mobile */
 .content {
   background-color: var(--card-background-light);
   padding: 1rem;
@@ -160,7 +280,6 @@ header {
   text-align: center;
 }
 
-/* Schedule items with better visual hierarchy */
 .schedule-items {
   display: flex;
   flex-direction: column;
@@ -200,7 +319,6 @@ header {
   margin-left: 0.5rem;
 }
 
-/* Reminders section */
 .reminders {
   margin: 0.5rem 0;
 }
@@ -209,7 +327,7 @@ header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: rgba(244, 162, 97, 0.15); /* Light highlight color background */
+  background-color: rgba(244, 162, 97, 0.15);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   border-left: 4px solid var(--highlight-color);
@@ -228,7 +346,6 @@ header {
   font-weight: 500;
 }
 
-/* Voice control section - simple and clear */
 .voice-control-section {
   display: flex;
   flex-direction: column;
@@ -236,7 +353,6 @@ header {
   margin: 0.75rem 0;
 }
 
-/* Button Styles - larger, clearer, more touchable */
 .mic-button {
   display: flex;
   align-items: center;
@@ -274,7 +390,6 @@ header {
   transform: scale(0.98);
 }
 
-/* Clear, distinctive active state */
 .mic-button.listening {
   background-color: var(--highlight-color);
   animation: gentle-pulse 2s infinite;
@@ -320,9 +435,8 @@ header {
   }
 }
 
-/* Feedback element - better contrast and visibility */
 .feedback {
-  background-color: rgba(40, 112, 184, 0.9); /* More visible than black */
+  background-color: rgba(40, 112, 184, 0.9);
   color: white;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
@@ -342,19 +456,18 @@ header {
   pointer-events: none;
 }
 
-/* Identity card positioned at the top of the page */
 .identity-card {
   background-color: var(--primary-color);
   color: white;
   padding: 1.5rem;
   border-radius: 0 0 12px 12px;
-  position: fixed; /* Fixed position at top */
+  position: fixed;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  z-index: 1000; /* Above other content */
+  z-index: 1000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   opacity: 1;
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -362,7 +475,7 @@ header {
 
 .identity-card.hidden {
   opacity: 0;
-  transform: translate(-50%, -100%); /* Slide up animation */
+  transform: translate(-50%, -100%);
   pointer-events: none;
 }
 
@@ -405,7 +518,6 @@ header {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Footer for additional guidance - compact */
 .footer {
   text-align: center;
   padding: 0.5rem 0;
@@ -415,7 +527,6 @@ header {
   margin-bottom: 0.5rem;
 }
 
-/* Tablet adjustments */
 @media (min-width: 481px) and (max-width: 768px) {
   .container {
     max-width: 600px;
@@ -441,7 +552,6 @@ header {
   }
 }
 
-/* Desktop adjustments */
 @media (min-width: 769px) {
   .container {
     max-width: 800px;
@@ -483,13 +593,11 @@ header {
   }
 }
 
-/* Focus styles for accessibility */
 :focus {
   outline: 3px solid var(--highlight-color);
   outline-offset: 2px;
 }
 
-/* High contrast mode support */
 @media (forced-colors: active) {
   .mic-button {
     border: 2px solid ButtonText;
