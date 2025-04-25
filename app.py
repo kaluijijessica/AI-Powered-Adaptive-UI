@@ -16,7 +16,7 @@ IDENTITY_DETAILS = {
         "relationship": "daughter",
         "phone": "+1 234 567 890"
     },
-    "address": "123 Care Street, Safe City, CA 98765"
+    "address": "123 Care Street, Avondale, Lusaka, Zambia"
 }
 
 # Suppress warnings
