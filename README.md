@@ -102,10 +102,15 @@ This project is an AI-powered adaptive user interface designed to assist dementi
 1. **Text Size**:
    - "Make text bigger."
    - "Make text smaller."
+   - "Text too big."
+   - "Text too small"
 
 2. **Contrast**:
    - "Switch to dark mode."
    - "Switch to light mode."
+   - "Too bright."
+   - "Can't see."
+   - "Text too dark."
 
 3. **Time**:
    - "What time is it?"
@@ -113,22 +118,8 @@ This project is an AI-powered adaptive user interface designed to assist dementi
 4. **Identity**:
    - "Who am I?"
    - "What's my name?"
+   - "Where am I?"
 
-
----
-
-## **How It Works**
-
-1. **Backend**:
-   - The Flask backend processes voice commands using the Hugging Face zero-shot classification model.
-   - Commands are matched against predefined actions or classified using AI.
-
-2. **Frontend**:
-   - The frontend dynamically updates the UI based on responses from the backend.
-   - Speech recognition is handled using the browser's Web Speech API.
-
-3. **Real-Time Communication**:
-   - Flask-SocketIO enables real-time communication between the backend and frontend.
 
 ---
 
