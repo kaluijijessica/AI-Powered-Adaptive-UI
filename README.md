@@ -114,29 +114,6 @@ This project is an AI-powered adaptive user interface designed to assist dementi
    - "Who am I?"
    - "What's my name?"
 
-5. **Schedule**:
-   - "Show my schedule."
-
-6. **Help**:
-   - "Help."
-
----
-
-## **Contributing**
-
-Feel free to contribute to this project by submitting issues or pull requests.
-
----
-
-## **License**
-
-This project is licensed under the MIT License.
-
----
-
-Let me know if you need further modifications!5. **Access the Application**:
-
-- Open a browser and navigate to `http://127.0.0.1:5000`.
 
 ---
 
@@ -155,48 +132,9 @@ Let me know if you need further modifications!5. **Access the Application**:
 
 ---
 
-## **Technologies Used**
-
-- **Backend**: Flask, Flask-SocketIO, Hugging Face API.
-- **Frontend**: HTML, CSS, JavaScript.
-- **Speech Recognition**: Browser's Web Speech API.
-- **AI Model**: Hugging Face zero-shot classification (`typeform/distilbert-base-uncased-mnli`).
-
----
-
-## **Commands Supported**
-
-1. **Text Size**:
-   - "Make text bigger."
-   - "Make text smaller."
-
-2. **Contrast**:
-   - "Switch to dark mode."
-   - "Switch to light mode."
-
-3. **Time**:
-   - "What time is it?"
-
-4. **Identity**:
-   - "Who am I?"
-   - "What's my name?"
-
-5. **Schedule**:
-   - "Show my schedule."
-
-6. **Help**:
-   - "Help."
-
----
-
-## **Contributing**
-
-Feel free to contribute to this project by submitting issues or pull requests.
-
----
-
 ## **License**
 
 This project is licensed under the MIT License.
 
 ---
+
