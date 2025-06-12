@@ -44,7 +44,7 @@ This project is an AI-powered adaptive user interface designed to assist dementi
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/your-repo/ai-powered-adaptive-ui.git
+   git clone https://github.com/kaluijijessica/AI-Powered-Adaptive-UI.git
    cd ai-powered-adaptive-ui
    ```
 
